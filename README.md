@@ -1,9 +1,19 @@
-# FROLIC3D — Full-body Reconstruction Of Little Ones and Interacting Caregivers
-
-**F**ull-body **R**econstruction **O**f **L**ittle ones and **I**nteracting **C**aregivers: a multi-view, multi-person, child-aware 3D human mesh pipeline. Synced videos from two or more ordinary cameras go in; per-person body meshes (Anny, all ages), joints, quality metrics and rendered videos come out.
+<p align="center">
+  <img src="docs/FROLIC3D_logo.png" width="500" alt="FROLIC3D">
+</p>
 
 <p align="center">
-  <img src="docs/FROLIC3D_Caregiver_Connection.png" width="50%" alt="FROLIC3D caregiver connection: camera grid with mesh overlays and 3D room view">
+  <strong>Full-body Reconstruction Of Little Ones and Interacting Caregivers</strong>
+</p>
+
+<p align="center">
+  A multi-view, multi-person, child-aware 3D human mesh pipeline.
+</p>
+
+Synced videos from two or more ordinary cameras go in; per-person body meshes (Anny, all ages), joints, quality metrics and rendered videos come out.
+
+<p align="center">
+  <img src="docs/FROLIC3D_Caregiver_Connection.png" width="30%" alt="FROLIC3D caregiver connection: camera grid with mesh overlays and 3D room view">
 </p>
 
 ## What it does
