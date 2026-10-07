@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frolic3d"
+version = "0.1.0"
+description = "FROLIC 3D: multi-view, multi-person, child-aware 3D human mesh pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "FROLIC 3D contributors" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "opencv-python>=4.8",
+    "pydantic>=2.5",
+    "pyyaml>=6",
+    "typer>=0.12",
+    "torch>=2.1",
+    "roma>=1.4",
+]
+
+[project.optional-dependencies]
+detect = ["rtmlib>=0.0.13", "onnxruntime-gpu>=1.16"]
+track = ["aniposelib>=0.8", "torchreid>=0.2.5", "pandas>=2"]
+anny = ["anny>=0.3"]
+render = ["pyrender>=0.1.45", "trimesh>=4", "PyOpenGL==3.1.0", "Pillow>=10"]
+sync = ["soundfile>=0.12"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "pre-commit>=3"]
+all = ["frolic3d[detect,track,anny,render,sync]"]
+
+[project.scripts]
+frolic = "frolic3d.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["frolic3d*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+exclude = ["docs", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF"]
+ignore = ["E501", "E741", "N803", "N806", "N802", "B905", "RUF012", "SIM108", "UP007", "RUF005", "B008", "SIM102", "SIM103", "RUF003", "RUF001", "RUF002"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N", "B011"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "gpu: needs the real models and a GPU (opt in with FROLIC_TEST_CLIP)",
+    "slow: takes more than a few seconds",
+]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]
+
+[tool.coverage.run]
+source = ["frolic3d"]
+omit = ["frolic3d/detect/rtmlib_adapter.py", "frolic3d/sam3d/adapter.py", "frolic3d/track/reid.py"]

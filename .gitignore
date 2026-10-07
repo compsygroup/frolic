@@ -1,0 +1,44 @@
+# data and outputs never belong in the repository
+data/
+outputs/
+work/
+runs/
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.jpg
+*.jpeg
+*.png
+*.npy
+*.npz
+*.pkl
+*.pth
+*.ckpt
+*.onnx
+*.zip
+!docs/figures/*.png
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.venv/
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# slurm
+slurm-*.out

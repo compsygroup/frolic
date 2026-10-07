@@ -1,0 +1,10 @@
+PLACEHOLDER - no licence has been chosen yet.
+
+The maintainers have not decided on a licence for FROLIC 3D. Until a licence
+is added here, all rights are reserved and the code may not be redistributed.
+
+See THIRD_PARTY.md for the licences of the models and libraries this
+pipeline depends on; several of them (SAM 3D Body, the research-only training
+data behind the detector and re-ID weights) restrict redistribution or
+commercial use and constrain the choice made here. THIRD_PARTY.md ends with a
+recommendation (Apache-2.0 for the code, with the model restrictions documented).

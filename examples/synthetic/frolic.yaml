@@ -1,0 +1,43 @@
+# Synthetic example: two stick-figure people seen by four cameras, every heavy model mocked.
+# 1. python examples/synthetic/make_scene.py      (writes examples/synthetic/data, gitignored)
+# 2. frolic run -c examples/synthetic/frolic.yaml
+input:
+  video_dir: data/videos
+  pattern: "*.mp4"
+  work_dir: data/work
+  synced: true
+calib:
+  mode: given
+  given: data/calib/cameras.json
+  level_floor: false
+detect:
+  detector: mock
+  mock_dir: data/gt
+track:
+  fps: 15.0
+  reid: none
+  refine: false
+select:
+  mode: auto
+  min_track_s: 0.5
+  labels:
+    p0: adult
+    p1: child
+single_view:
+  enabled: false
+sam3d:
+  backend: mock
+fit:
+  backend: mock
+  device: cpu
+export:
+  full_rate_joints: true
+render:
+  what: [grid, room]
+  fps: 15
+  tile_width: 480
+  room_width: 960
+  room_height: 540
+compute:
+  device: cpu
+  threads: 4
