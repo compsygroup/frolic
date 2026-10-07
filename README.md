@@ -4,7 +4,7 @@
 child-aware 3D human mesh pipeline. Synced videos from two or more ordinary cameras go in; per-person body meshes
 (Anny, all ages), joints, quality metrics and rendered videos come out.
 
-![pipeline figure placeholder](docs/figures/pipeline.png)
+![pipeline figure placeholder](docs/figures/FROLIC3D_Caregiver_Connection.png)
 
 *(figure placeholder: camera grid with mesh overlays and the 3D room view)*
 
