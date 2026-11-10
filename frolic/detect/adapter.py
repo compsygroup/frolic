@@ -7,7 +7,7 @@ from typing import Protocol
 
 import numpy as np
 
-from frolic3d.config import DetectConfig
+from frolic.config import DetectConfig
 
 DetectorOutput = tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
@@ -30,7 +30,7 @@ def make_detector(cfg: DetectConfig, device: str) -> PoseDetector:
     if cfg.detector in _FACTORIES:
         return _FACTORIES[cfg.detector](cfg, device)
     if cfg.detector == "rtmlib":
-        from frolic3d.detect.rtmlib_adapter import RtmlibDetector
+        from frolic.detect.rtmlib_adapter import RtmlibDetector
 
         return RtmlibDetector(cfg, device)
     raise ValueError(f"no detector factory for {cfg.detector!r}")

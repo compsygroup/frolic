@@ -6,10 +6,10 @@ import types
 import yaml
 from typer.testing import CliRunner
 
-from frolic3d import pipeline
-from frolic3d.cli import app
-from frolic3d.config import FrolicConfig, load_config
-from frolic3d.io.workdir import STAGES, WorkDir
+from frolic import pipeline
+from frolic.cli import app
+from frolic.config import FrolicConfig, load_config
+from frolic.io.workdir import STAGES, WorkDir
 
 runner = CliRunner()
 
@@ -100,7 +100,7 @@ def test_stage_python_other_interpreter_subprocess(tmp_path, monkeypatch):
     monkeypatch.setattr(pipeline.subprocess, "run", fake_run)
     assert pipeline.run_stage(cfg, work, "fit", config_path=tmp_path / "frolic.yaml") is True
     assert (
-        seen["cmd"][:3] == [str((tmp_path / "other_python").resolve()), "-m", "frolic3d.cli"] and "fit" in seen["cmd"]
+        seen["cmd"][:3] == [str((tmp_path / "other_python").resolve()), "-m", "frolic.cli"] and "fit" in seen["cmd"]
     )
 
 

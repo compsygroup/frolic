@@ -13,11 +13,11 @@ from scipy.optimize import least_squares
 from scipy.sparse import lil_matrix
 from scipy.spatial.transform import Rotation
 
-from frolic3d.config import BoardConfig
-from frolic3d.geometry import Camera, rotation_angle_deg
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.video import iter_frames
-from frolic3d.log import get_logger
+from frolic.config import BoardConfig
+from frolic.geometry import Camera, rotation_angle_deg
+from frolic.io.calib import CameraSet
+from frolic.io.video import iter_frames
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 
@@ -456,7 +456,7 @@ def calibrate_multi(
 
 def compare_to_reference(cams: CameraSet, ref: CameraSet) -> dict[str, Any]:
     """Centre and rotation differences after a rigid alignment on the common cameras (diagnostics)."""
-    from frolic3d.geometry import umeyama
+    from frolic.geometry import umeyama
 
     common = [n for n in cams.names if n in ref.names]
     A = np.array([cams[n].center for n in common])

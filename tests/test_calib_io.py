@@ -5,13 +5,13 @@ import numpy as np
 import pytest
 import yaml
 
-from frolic3d.calib.stage import run as calib_run
-from frolic3d.config import load_config
-from frolic3d.geometry import rodrigues
-from frolic3d.io.calib import CameraSet, from_gui_json, load_cameras, save_cameras, to_gui_json
-from frolic3d.io.workdir import WorkDir
-from frolic3d.sync.stage import run as sync_run
-from frolic3d.synthetic import make_scene, ring_cameras
+from frolic.calib.stage import run as calib_run
+from frolic.config import load_config
+from frolic.geometry import rodrigues
+from frolic.io.calib import CameraSet, from_gui_json, load_cameras, save_cameras, to_gui_json
+from frolic.io.workdir import WorkDir
+from frolic.sync.stage import run as sync_run
+from frolic.synthetic import make_scene, ring_cameras
 
 BOARD = {
     "squares_x": 8,
@@ -112,7 +112,7 @@ def test_opencv_yaml_and_anipose(tmp_path):
 
 
 def rodrigues_vec(R):
-    from frolic3d.geometry import rotvec
+    from frolic.geometry import rotvec
 
     return rotvec(R)
 
@@ -175,7 +175,7 @@ def test_camera_transform_in_gui_matches_given_R_t():
 def test_calibrate_stage_bootstrap(tmp_path):
     import shutil
 
-    from frolic3d.geometry import umeyama
+    from frolic.geometry import umeyama
 
     scene = tmp_path / "scene"
     info = make_scene(scene, n_cams=3, n_frames=90, people=[{"stature": 1.6, "start": (-1, -0.5), "end": (1, 0.5)}])

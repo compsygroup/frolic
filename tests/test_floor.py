@@ -1,10 +1,10 @@
 import numpy as np
 
-from frolic3d.calib.floor import apply_rigid, floor_align, level_floor, standing_feet
-from frolic3d.geometry import rodrigues
-from frolic3d.io.tracks import Tracks
-from frolic3d.skeleton import J
-from frolic3d.synthetic import person_track, ring_cameras
+from frolic.calib.floor import apply_rigid, floor_align, level_floor, standing_feet
+from frolic.geometry import rodrigues
+from frolic.io.tracks import Tracks
+from frolic.skeleton import J
+from frolic.synthetic import person_track, ring_cameras
 
 
 def _tracks(people, fps=15.0):

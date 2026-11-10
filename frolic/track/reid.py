@@ -9,11 +9,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from frolic3d.config import TrackConfig
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.video import FrameReader
-from frolic3d.log import get_logger
+from frolic.config import TrackConfig
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.io.video import FrameReader
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 Embedding = dict[tuple[str, int], np.ndarray]
@@ -33,7 +33,7 @@ class OsnetEmbedder:
             import torch
             from torchreid.reid.utils import FeatureExtractor
         except ImportError as e:
-            raise ImportError(f"torchreid is not available ({e}); pip install 'frolic3d[track]'") from e
+            raise ImportError(f"torchreid is not available ({e}); pip install 'frolic[track]'") from e
         torch.set_num_threads(threads)
         dev = "cuda" if device.startswith("cuda") and torch.cuda.is_available() else "cpu"
         self.ex = FeatureExtractor(model_name=model, model_path=str(weights), device=dev)

@@ -5,14 +5,14 @@ import json
 import numpy as np
 import pytest
 
-from frolic3d.geometry import Camera
-from frolic3d.io.calib import load_cameras, save_cameras
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.video import iter_frames, list_videos, probe_video
-from frolic3d.io.workdir import STAGES, WorkDir
-from frolic3d.skeleton import N_JOINTS
-from frolic3d.synthetic import make_scene, ring_cameras
+from frolic.geometry import Camera
+from frolic.io.calib import load_cameras, save_cameras
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.io.video import iter_frames, list_videos, probe_video
+from frolic.io.workdir import STAGES, WorkDir
+from frolic.skeleton import N_JOINTS
+from frolic.synthetic import make_scene, ring_cameras
 
 
 def test_cameras_roundtrip(tmp_path):
@@ -27,7 +27,7 @@ def test_cameras_roundtrip(tmp_path):
         np.testing.assert_allclose(a.t, b.t)
         np.testing.assert_allclose(a.center, b.center)
     with open(p) as fh:
-        assert json.load(fh)["schema"] == "frolic3d.cameras/1"
+        assert json.load(fh)["schema"] == "frolic.cameras/1"
 
 
 def test_cameras_bad_schema(tmp_path):
@@ -40,7 +40,7 @@ def test_cameras_bad_schema(tmp_path):
 def test_cameraset_transform_keeps_projection():
     cams = ring_cameras(2)
     R = Camera("", 1, 1, np.eye(3)).R
-    from frolic3d.geometry import rodrigues
+    from frolic.geometry import rodrigues
 
     R = rodrigues([0.1, -0.2, 0.3])
     t = np.array([0.5, -1.0, 0.2])

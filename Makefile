@@ -17,15 +17,15 @@ test-gpu:
 	$(PYTEST) -q -m gpu
 
 cov:
-	$(PYTEST) -q -m "not gpu" --cov=frolic3d --cov-report=term-missing --cov-report=xml
+	$(PYTEST) -q -m "not gpu" --cov=frolic --cov-report=term-missing --cov-report=xml
 
 lint:
-	$(RUFF) check frolic3d tests
-	$(RUFF) format --check frolic3d tests
+	$(RUFF) check frolic tests
+	$(RUFF) format --check frolic tests
 
 format:
-	$(RUFF) format frolic3d tests
-	$(RUFF) check --fix frolic3d tests
+	$(RUFF) format frolic tests
+	$(RUFF) check --fix frolic tests
 
 clean:
 	rm -rf build dist .pytest_cache .ruff_cache htmlcov coverage.xml .coverage

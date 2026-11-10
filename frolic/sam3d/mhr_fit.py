@@ -17,11 +17,11 @@ import numpy as np
 import roma
 import torch
 
-from frolic3d.config import Sam3dConfig
-from frolic3d.io.calib import CameraSet
-from frolic3d.log import get_logger
-from frolic3d.sam3d.adapter import MhrModel
-from frolic3d.skeleton import HALPE26_TO_MHR70, MHR70_BODY, MHR70_FEET, MHR70_HIPS, J
+from frolic.config import Sam3dConfig
+from frolic.io.calib import CameraSet
+from frolic.log import get_logger
+from frolic.sam3d.adapter import MhrModel
+from frolic.skeleton import HALPE26_TO_MHR70, MHR70_BODY, MHR70_FEET, MHR70_HIPS, J
 
 log = get_logger(__name__)
 

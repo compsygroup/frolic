@@ -1,5 +1,5 @@
 # One environment for every stage. The heavy models are optional extras; see README "Install".
-name: frolic3d
+name: frolic
 channels:
   - conda-forge
   - pytorch

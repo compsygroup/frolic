@@ -10,10 +10,10 @@ from typing import Any
 import cv2
 import numpy as np
 
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.video import FrameReader
-from frolic3d.log import get_logger
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.io.video import FrameReader
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 TILE = (150, 220)
@@ -123,22 +123,30 @@ def contact_sheet(
     return per_person
 
 
+def img_tags(tiles: list[np.ndarray]) -> list[str]:
+    """Tiles as self-contained <img> tags (base64 JPEG); blank padding tiles skipped."""
+    out = []
+    for t in tiles:
+        if not t.any():
+            continue
+        ok, buf = cv2.imencode(".jpg", t, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        if ok:
+            out.append(f"<img src='data:image/jpeg;base64,{base64.b64encode(buf.tobytes()).decode()}'/>")
+    return out
+
+
 def write_html(tr: Tracks, people: list[dict[str, Any]], tiles: dict[str, list[np.ndarray]], out_html: Path) -> None:
     info = {p["id"]: p for p in people}
     style = "body{font-family:sans-serif;background:#222;color:#eee}td{padding:4px}img{margin:1px}"
     parts = [
-        f"<html><head><meta charset='utf-8'><title>FROLIC 3D people</title><style>{style}</style></head><body>",
-        "<h2>Tracked people</h2><p>Write the ids to keep (one per line) into the selection file, "
-        "or pass them to <code>frolic select</code>.</p><table>",
+        f"<html><head><meta charset='utf-8'><title>FROLIC people</title><style>{style}</style></head><body>",
+        "<h2>Tracked people</h2><p>Ids after tracking (association, re-id, identity assembly). "
+        "<code>select.mode: interactive</code> serves this sheet with checkboxes.</p><table>",
         "<tr><th>#</th><th>id</th><th>stature</th><th>duration</th><th>views</th><th>tiles</th></tr>",
     ]
     for k, pid in enumerate(tr.ids):
         p = info.get(pid, {})
-        imgs = []
-        for t in tiles.get(pid, []):
-            ok, buf = cv2.imencode(".jpg", t, [cv2.IMWRITE_JPEG_QUALITY, 80])
-            if ok:
-                imgs.append(f"<img src='data:image/jpeg;base64,{base64.b64encode(buf.tobytes()).decode()}'/>")
+        imgs = img_tags(tiles.get(pid, []))
         st = p.get("stature_m")
         stat = f"{st:.2f} m" if st else "?"
         cells = [

@@ -5,14 +5,14 @@ import pytest
 import roma
 import torch
 
-from frolic3d.config import FitConfig, PersonConfig
-from frolic3d.fit import filters, shape
-from frolic3d.fit.anny_model import make_body
-from frolic3d.fit.biomech import ADULT, BiomechConstraints, blended_ranges, ranges_table
-from frolic3d.fit.fitter import FitInputs, PersonFitter
-from frolic3d.fit.root import RootParam, continuous_rotvecs, geodesic_acceleration, spin_events
-from frolic3d.skeleton import J
-from frolic3d.synthetic import person_track
+from frolic.config import FitConfig, PersonConfig
+from frolic.fit import filters, shape
+from frolic.fit.anny_model import make_body
+from frolic.fit.biomech import ADULT, BiomechConstraints, blended_ranges, ranges_table
+from frolic.fit.fitter import FitInputs, PersonFitter
+from frolic.fit.root import RootParam, continuous_rotvecs, geodesic_acceleration, spin_events
+from frolic.skeleton import J
+from frolic.synthetic import person_track
 
 FPS = 15.0
 

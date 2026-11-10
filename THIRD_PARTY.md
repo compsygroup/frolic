@@ -1,6 +1,6 @@
 # Third-party software and models
 
-FROLIC 3D does not vendor any model weights. Every model is loaded through an adapter from a location the user installs
+FROLIC does not vendor any model weights. Every model is loaded through an adapter from a location the user installs
 (README, "Install"). The table lists what the pipeline uses, under which licence, and whether that licence restricts
 redistribution or commercial use. Flags are our reading of the licence texts as of the date of writing; they are not
 legal advice. Check the linked licences before redistributing or deploying commercially.
@@ -29,10 +29,10 @@ legal advice. Check the linked licences before redistributing or deploying comme
 
 | component | relation | licence | note |
 |---|---|---|---|
-| [Kineo](https://github.com/liris-xr/kineo) (Ecole Centrale de Lyon et al.) | the research pipeline used Kineo's calibration-free bootstrap; FROLIC reimplements a person-based bootstrap (`frolic3d/calib/bootstrap.py`) and does not import Kineo | non-commercial research licence | **Flag:** do not add Kineo as a dependency or copy code from it without accepting its non-commercial terms for the whole distribution. |
-| [ChArUco calibrator GUI](https://github.com/nairg1/charuco-calibrator-gui) | FROLIC's board calibration reads and writes its intrinsics / multi-camera JSON formats and uses the same board model (8 x 6, legacy pattern, DICT_4X4_100 by default); `frolic3d/calib/board.py` is an independent implementation whose design follows that tool's OpenCV >= 4.7 object-API port, intrinsics plausibility safeguards, constrained re-solve for degenerate views and multi-frame extrinsics (credited here); FROLIC adds video input, pose-diverse frame sampling and a multi-camera bundle adjustment | PolyForm Noncommercial 1.0.0 | **Flag:** copying code from that repository into FROLIC would make the combined work noncommercial unless its author relicenses it. The formats themselves are not copyrightable interfaces; crediting the tool is a courtesy. |
+| [Kineo](https://github.com/liris-xr/kineo) (Ecole Centrale de Lyon et al.) | the research pipeline used Kineo's calibration-free bootstrap; FROLIC reimplements a person-based bootstrap (`frolic/calib/bootstrap.py`) and does not import Kineo | non-commercial research licence | **Flag:** do not add Kineo as a dependency or copy code from it without accepting its non-commercial terms for the whole distribution. |
+| [ChArUco calibrator GUI](https://github.com/nairg1/charuco-calibrator-gui) | FROLIC's board calibration reads and writes its intrinsics / multi-camera JSON formats and uses the same board model (8 x 6, legacy pattern, DICT_4X4_100 by default); `frolic/calib/board.py` is an independent implementation whose design follows that tool's OpenCV >= 4.7 object-API port, intrinsics plausibility safeguards, constrained re-solve for degenerate views and multi-frame extrinsics (credited here); FROLIC adds video input, pose-diverse frame sampling and a multi-camera bundle adjustment | PolyForm Noncommercial 1.0.0 | **Flag:** copying code from that repository into FROLIC would make the combined work noncommercial unless its author relicenses it. The formats themselves are not copyrightable interfaces; crediting the tool is a courtesy. |
 
-## Choosing a licence for FROLIC 3D (recommendation only, not decided)
+## Choosing a licence for FROLIC (recommendation only, not decided)
 
 `LICENSE` is a placeholder. Points to weigh:
 

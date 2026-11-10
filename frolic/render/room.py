@@ -7,11 +7,11 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from frolic3d.config import RenderConfig
-from frolic3d.io.video import write_video
-from frolic3d.log import get_logger
-from frolic3d.render.footprints import footprint_mesh, footsteps
-from frolic3d.render.scene import (
+from frolic.config import RenderConfig
+from frolic.io.video import write_video
+from frolic.log import get_logger
+from frolic.render.footprints import footprint_mesh, footsteps
+from frolic.render.scene import (
     Scene,
     body_mesh,
     catmull_rom,

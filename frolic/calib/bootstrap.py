@@ -13,12 +13,12 @@ from scipy.optimize import least_squares
 from scipy.sparse import lil_matrix
 from scipy.spatial.transform import Rotation
 
-from frolic3d.config import BootstrapConfig
-from frolic3d.geometry import Camera, triangulate_batch
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.detections import N_KP, Detections
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26_TORSO
+from frolic.config import BootstrapConfig
+from frolic.geometry import Camera, triangulate_batch
+from frolic.io.calib import CameraSet
+from frolic.io.detections import N_KP, Detections
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26_TORSO
 
 log = get_logger(__name__)
 

@@ -3,12 +3,12 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from frolic3d.config import TrackConfig
-from frolic3d.skeleton import N_JOINTS, J
-from frolic3d.synthetic import person_track, project_people
-from frolic3d.track import refine
-from frolic3d.track.associate import associate
-from frolic3d.track.refine import blank_outliers, one_euro, refine_tracks, smooth_runs
+from frolic.config import TrackConfig
+from frolic.skeleton import N_JOINTS, J
+from frolic.synthetic import person_track, project_people
+from frolic.track import refine
+from frolic.track.associate import associate
+from frolic.track.refine import blank_outliers, one_euro, refine_tracks, smooth_runs
 
 
 def test_one_euro_removes_jitter():

@@ -8,12 +8,12 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.config import TrackConfig
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.log import get_logger
-from frolic3d.skeleton import J
-from frolic3d.track.reid import Embedding
+from frolic.config import TrackConfig
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.log import get_logger
+from frolic.skeleton import J
+from frolic.track.reid import Embedding
 
 log = get_logger(__name__)
 THR = 1.6  # z-scored feature distance to join an identity
@@ -60,7 +60,7 @@ def _segment_colour(
 
 
 def cut_segments(tr: Tracks, dets: dict[str, Detections], cfg: TrackConfig, E: Embedding | None) -> list[Segment]:
-    from frolic3d.track.associate import colour_stats
+    from frolic.track.associate import colour_stats
 
     stats = colour_stats(dets)
     fps = tr.fps

@@ -1,4 +1,4 @@
-"""Camera calibration file: `cameras.json` (schema `frolic3d.cameras/1`) and converters from other formats."""
+"""Camera calibration file: `cameras.json` (schema `frolic.cameras/1`) and converters from other formats."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.geometry import Camera
+from frolic.geometry import Camera
 
-SCHEMA = "frolic3d.cameras/1"
+SCHEMA = "frolic.cameras/1"
 
 
 @dataclass

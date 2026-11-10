@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from frolic3d.config import RenderConfig
-from frolic3d.render.overlay import render_overlay
-from frolic3d.render.scene import Scene
+from frolic.config import RenderConfig
+from frolic.render.overlay import render_overlay
+from frolic.render.scene import Scene
 
 
 def render_grid(scene: Scene, cfg: RenderConfig, out_path: Path) -> Path:

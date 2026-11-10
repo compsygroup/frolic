@@ -8,11 +8,11 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.video import VideoInfo, list_videos, probe_video, read_audio, trim_video
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.sync.audio import PairLag, closure_errors, offsets_from_pairs, pairwise_lags
+from frolic.config import FrolicConfig
+from frolic.io.video import VideoInfo, list_videos, probe_video, read_audio, trim_video
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.sync.audio import PairLag, closure_errors, offsets_from_pairs, pairwise_lags
 
 log = get_logger(__name__)
 

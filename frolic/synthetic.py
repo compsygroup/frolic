@@ -8,11 +8,11 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from frolic3d.geometry import Camera
-from frolic3d.io.calib import CameraSet, save_cameras
-from frolic3d.io.detections import N_KP, Detections
-from frolic3d.io.video import write_video
-from frolic3d.skeleton import HALPE26, N_JOINTS, J
+from frolic.geometry import Camera
+from frolic.io.calib import CameraSet, save_cameras
+from frolic.io.detections import N_KP, Detections
+from frolic.io.video import write_video
+from frolic.skeleton import HALPE26, N_JOINTS, J
 
 # segment lengths as a fraction of stature (rough anthropometry)
 PROPORTIONS = {

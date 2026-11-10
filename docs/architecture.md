@@ -1,9 +1,9 @@
 # Architecture
 
-FROLIC 3D is a staged pipeline. Every stage is a function `run(cfg, work) -> dict` in `frolic3d/<stage>/stage.py`,
+FROLIC is a staged pipeline. Every stage is a function `run(cfg, work) -> dict` in `frolic/<stage>/stage.py`,
 reads only canonical files in the work directory and writes a done marker when it finishes
-(`docs/CONTRACTS.md` lists every file). The command line (`frolic3d/cli.py`) is a thin wrapper around
-`frolic3d/pipeline.py`, which owns the stage order, the markers, `--force` / `--from`, and the per-stage interpreter
+(`docs/CONTRACTS.md` lists every file). The command line (`frolic/cli.py`) is a thin wrapper around
+`frolic/pipeline.py`, which owns the stage order, the markers, `--force` / `--from`, and the per-stage interpreter
 hand-off.
 
 ```
@@ -38,7 +38,7 @@ videos ──sync──> videos.json ──detect──> detect/<cam>.npz
 | `calib/` | `board.py` (ChArUco: intrinsics with pose-diverse frame selection and sanity checks, IPPE board poses, chained extrinsics, multi-frame bundle adjustment, metric scale from the square length), `bootstrap.py` (person-based calibration-free SfM + bundle adjustment, metric scale from a known stature), `floor.py` (z shift from feet, plane levelling), converters |
 | `detect/` | detector / pose adapter (`rtmlib` YOLOX + RTMPose halpe26; `mock` for tests), static masks, polygon masks, torso colour |
 | `track/` | `associate.py` (per-frame greedy RANSAC clustering across views on pelvis + neck, Hungarian linking over time with appearance and body size), `identity.py` (segment-level identity assembly with cannot-link constraints and re-ID embeddings, merge / split / drop overrides), `refine.py` (joint multi-view refinement: robust reprojection + smoothness + limb lengths, consensus weighting, One-Euro), `reid.py` (OSNet adapter) |
-| `select/` | auto filters (views, duration, height, children only), contact sheet (JPG + HTML), pickers (CLI, OpenCV, matplotlib, text file), visibility spans |
+| `select/` | auto filters (views, duration, height, children only), contact sheet (JPG + HTML), browser picker (local page with checkboxes) or a text file of ids, visibility spans |
 | `singleview/` | the single-view lift: candidate detections for frames without 3D, depth fused from track prior / pelvis height / limb lengths / feet on floor / a second camera, joint depths from SAM 3D Body or the nearest 3D pose, smoothing and rejection |
 | `sam3d/` | SAM 3D Body adapter (`mock` for tests), prompts from the tracks, per-view inference, multi-view MHR fit |
 | `fit/` | `anny_model.py` (Anny adapter: skeleton function, landmark and dense surface sampling), `shape.py` (segment-length targets, ankle bias, phenotype from age / sex / height / mass), `root.py` (continuous quaternion root init, delta parameterisation, geodesic acceleration), `biomech.py` (joint limits, capsule self-collision, foot rules, angular velocity), `filters.py` (One-Euro, soft fades, jump gates), `fitter.py` (stage 1 shape + pose from the tracks, stage 2 pose from SAM 3D Body with gates, single-view weighting and bridging) |
@@ -64,11 +64,11 @@ Model weights are never vendored (see THIRD_PARTY.md and README "Install").
 
 ## What was generalised
 
-| in the research code | in FROLIC 3D |
+| in the research code | in FROLIC |
 |---|---|
 | six fixed cameras named by their room position, 1080p60 | any number of cameras (>= 2), any resolution and frame rate; cameras are named after the video files, the track grid rate is a config value |
 | people were fixed household roles decided by room-zone heuristics and manual overrides | people are stable identities `p0, p1, ...` assembled from appearance (re-ID) and geometry; optional labels and attributes (age, height, sex, weight) in the config; merge / split / drop overrides by id |
-| person selection done by hand from contact sheets | `select` stage: auto filters, interactive picker (CLI / OpenCV / matplotlib), headless sheet + text file, or ids in the config |
+| person selection done by hand from contact sheets | `select` stage: auto filters, interactive browser picker, text file of ids, or ids in the config |
 | calibration from a site-specific board script or an external toolbox | three modes in one stage: ChArUco board videos, person-based calibration-free bootstrap with metric scale from a known stature, or a given file (own schema, calibrator-GUI JSON, anipose TOML, OpenCV YAML) |
 | mirror masked by painting frames | polygon masks per camera in the config, applied to detections |
 | three conda environments and shell drivers with hard-coded paths | one package; stages can still run in different interpreters via `compute.stage_python` |

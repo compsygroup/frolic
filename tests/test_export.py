@@ -6,15 +6,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from frolic3d.config import FrolicConfig
-from frolic3d.export.stage import interpolate_joints
-from frolic3d.export.stage import run as run_export
-from frolic3d.export.visibility import fill_gaps, visible_mask
-from frolic3d.io.calib import save_cameras
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.skeleton import JOINT_NAMES, N_JOINTS
-from frolic3d.synthetic import halpe26_from_joints, person_track, project_people, ring_cameras
+from frolic.config import FrolicConfig
+from frolic.export.stage import interpolate_joints
+from frolic.export.stage import run as run_export
+from frolic.export.visibility import fill_gaps, visible_mask
+from frolic.io.calib import save_cameras
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.skeleton import JOINT_NAMES, N_JOINTS
+from frolic.synthetic import halpe26_from_joints, person_track, project_people, ring_cameras
 
 TETRA = np.array([[0.03, 0, 0], [-0.015, 0.026, 0], [-0.015, -0.026, 0], [0, 0, 0.03]])
 
@@ -179,7 +179,7 @@ def test_export_stage_writes_schema(tmp_path):
     assert z["source_frames"][3] == 6 and np.isclose(z["frame_times"][3], 0.2)
     with open(out / "meta.json") as fh:
         meta = json.load(fh)
-    assert meta["schema"] == "frolic3d.export/1" and len(meta["people"]) == 2
+    assert meta["schema"] == "frolic.export/1" and len(meta["people"]) == 2
     assert (out / "cameras.json").exists() and (out / "metrics.json").exists() and (out / "summary.csv").exists()
     assert (out / "p0_joints_full.npz").exists()
     rows = (out / "summary.csv").read_text().strip().splitlines()

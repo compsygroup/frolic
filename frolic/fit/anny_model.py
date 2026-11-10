@@ -11,7 +11,7 @@ import numpy as np
 import roma
 import torch
 
-from frolic3d.skeleton import ANNY_POINTS, ANNY_POSED_BONES, ANNY_SEGMENT_LABELS, MHR70_SURFACE, N_JOINTS
+from frolic.skeleton import ANNY_POINTS, ANNY_POSED_BONES, ANNY_SEGMENT_LABELS, MHR70_SURFACE, N_JOINTS
 
 HAND_POINTS: list[tuple[int, str, str]] = []  # (MHR keypoint, Anny bone, head|tail): tip -> finger-3 tail, ...
 for _sd, _base in (("R", 21), ("L", 42)):
@@ -486,7 +486,7 @@ class MockBody:
         return heads[:, self._v_bone] + torch.einsum("nvij,vj->nvi", R[:, self._v_bone], Vl)
 
     def age_from_years(self, years: float) -> float:
-        from frolic3d.fit.shape import age_years_to_slider
+        from frolic.fit.shape import age_years_to_slider
 
         return age_years_to_slider(years)
 

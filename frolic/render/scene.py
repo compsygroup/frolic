@@ -9,9 +9,9 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.config import RenderConfig
-from frolic3d.geometry import Camera
-from frolic3d.io.calib import CameraSet, load_cameras
+from frolic.config import RenderConfig
+from frolic.geometry import Camera
+from frolic.io.calib import CameraSet, load_cameras
 
 PALETTE: list[tuple[int, int, int]] = [
     (236, 116, 36), (48, 104, 204), (46, 160, 98), (160, 78, 204),

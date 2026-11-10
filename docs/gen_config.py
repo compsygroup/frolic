@@ -7,7 +7,7 @@ from typing import get_args, get_origin
 
 from pydantic import BaseModel
 
-from frolic3d.config import FrolicConfig
+from frolic.config import FrolicConfig
 
 SECTION_NOTES = {
     "input": "Where the videos are and where the work goes.",
@@ -60,7 +60,7 @@ def main() -> None:
     lines = [
         "# Configuration reference",
         "",
-        "Generated from `frolic3d/config.py` by `docs/gen_config.py`.",
+        "Generated from `frolic/config.py` by `docs/gen_config.py`.",
         "`frolic init` writes a commented template with these defaults.",
         "",
         "Paths are resolved relative to the configuration file. Unknown keys are rejected.",

@@ -1,4 +1,4 @@
-from frolic3d.metrics.compute import (
+from frolic.metrics.compute import (
     compute_metrics,
     flips,
     jitter,

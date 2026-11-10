@@ -7,11 +7,11 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from frolic3d.config import RenderConfig
-from frolic3d.geometry import Camera
-from frolic3d.io.video import FrameReader, write_video
-from frolic3d.log import get_logger
-from frolic3d.render.scene import Scene, camera_pose, catmull_rom, draw_text, material, output_times, render_window
+from frolic.config import RenderConfig
+from frolic.geometry import Camera
+from frolic.io.video import FrameReader, write_video
+from frolic.log import get_logger
+from frolic.render.scene import Scene, camera_pose, catmull_rom, draw_text, material, output_times, render_window
 
 log = get_logger(__name__)
 

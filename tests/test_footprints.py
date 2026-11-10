@@ -1,7 +1,7 @@
 import numpy as np
 
-from frolic3d.render.footprints import footprint_mesh, footsteps
-from frolic3d.skeleton import J, JOINT_NAMES
+from frolic.render.footprints import footprint_mesh, footsteps
+from frolic.skeleton import J, JOINT_NAMES
 
 
 def _walk(n=90, fps=15.0, step_s=0.5, stride=0.3):

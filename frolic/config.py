@@ -161,8 +161,13 @@ class SelectConfig(Strict):
     max_people: int = 0
     ids: list[str] = Field(default_factory=list, description="config/interactive: identity ids to keep")
     labels: dict[str, str] = Field(default_factory=dict, description="identity id -> display name")
-    picker: Literal["cli", "opencv", "matplotlib", "file"] = "cli"
-    selection_file: Path | None = Field(None, description="headless: text file with one id per line")
+    selection_file: Path | None = Field(
+        None, description="interactive: text file with one id per line; when it exists it answers the stage without the page"
+    )
+    host: str = Field("127.0.0.1", description="interactive: address the person-picker page is served on")
+    port: int = Field(8770, description="interactive: picker port (a free port is used when busy)")
+    open_browser: bool = Field(True, description="interactive: open the picker page in the default browser")
+    timeout_s: float = Field(0.0, description="interactive: give up after this many seconds without a Submit (0 = wait)")
     sheet_tiles: int = 8
     spans_min_views: int = Field(0, description="> 0: keep only spans where the person is seen by >= k views")
     spans_min_s: float = 1.0
@@ -442,7 +447,7 @@ TEMPLATE_OVERRIDES = {
 def template() -> str:
     """A commented YAML template with every option at its default (and a valid `calib.given`)."""
     head = [
-        "# FROLIC 3D configuration. Every key is optional; missing keys take the defaults shown here.",
+        "# FROLIC configuration. Every key is optional; missing keys take the defaults shown here.",
         "# Paths are relative to this file. See docs/config.md for the meaning of each section.",
         "",
     ]

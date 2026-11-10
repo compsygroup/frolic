@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import torch
 
-from frolic3d.skeleton import SEGMENTS, J
+from frolic.skeleton import SEGMENTS, J
 
 PHENOTYPE_LABELS = ["gender", "age", "muscle", "weight", "height", "proportions"]
 

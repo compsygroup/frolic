@@ -8,12 +8,12 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.calib import CameraSet, load_cameras, save_cameras, to_gui_json
-from frolic3d.io.detections import Detections
-from frolic3d.io.video import list_videos, probe_video
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
+from frolic.config import FrolicConfig
+from frolic.io.calib import CameraSet, load_cameras, save_cameras, to_gui_json
+from frolic.io.detections import Detections
+from frolic.io.video import list_videos, probe_video
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 
@@ -52,7 +52,7 @@ def _load_intrinsics_json(paths: dict[str, Path]) -> dict[str, tuple[np.ndarray,
 
 
 def _board(cfg: FrolicConfig, names: list[str], work: WorkDir) -> tuple[CameraSet, dict[str, Any]]:
-    from frolic3d.calib.board import BoardSpec, calibrate_multi
+    from frolic.calib.board import BoardSpec, calibrate_multi
 
     b = cfg.calib.board
     if b.video_dir is None:
@@ -75,7 +75,7 @@ def _board(cfg: FrolicConfig, names: list[str], work: WorkDir) -> tuple[CameraSe
 
 
 def _bootstrap(cfg: FrolicConfig, names: list[str], work: WorkDir) -> tuple[CameraSet, dict[str, Any]]:
-    from frolic3d.calib.bootstrap import bootstrap
+    from frolic.calib.bootstrap import bootstrap
 
     det_dir = work.stage_dir("detect")
     missing = [n for n in names if not (det_dir / f"{n}.npz").exists()]

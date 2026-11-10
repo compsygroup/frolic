@@ -5,11 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.render.backend import select_backend
-from frolic3d.render.scene import load_scene
+from frolic.config import FrolicConfig
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.render.backend import select_backend
+from frolic.render.scene import load_scene
 
 log = get_logger(__name__)
 
@@ -17,19 +17,19 @@ log = get_logger(__name__)
 def render_what(what: str, scene, cfg: FrolicConfig, out_dir: Path) -> list[Path]:
     rc = cfg.render
     if what == "overlay":
-        from frolic3d.render.overlay import render_overlay
+        from frolic.render.overlay import render_overlay
 
         return [render_overlay(scene, rc, out_dir / f"overlay_{c}.mp4", [c]) for c in scene.cams.names]
     if what == "grid":
-        from frolic3d.render.grid import render_grid
+        from frolic.render.grid import render_grid
 
         return [render_grid(scene, rc, out_dir / "grid.mp4")]
     if what == "room":
-        from frolic3d.render.room import render_room
+        from frolic.render.room import render_room
 
         return [render_room(scene, rc, out_dir / "room.mp4")]
     if what == "trajectories":
-        from frolic3d.render.trajectories import render_trajectories
+        from frolic.render.trajectories import render_trajectories
 
         return [render_trajectories(scene, rc, out_dir / "trajectories.mp4")]
     raise ValueError(f"unknown render target {what!r}")

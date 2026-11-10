@@ -8,11 +8,11 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from frolic3d.geometry import Camera
-from frolic3d.io.video import iter_frames
-from frolic3d.log import get_logger
-from frolic3d.sam3d.adapter import KEEP, Sam3dBody
-from frolic3d.sam3d.prompts import Prompts
+from frolic.geometry import Camera
+from frolic.io.video import iter_frames
+from frolic.log import get_logger
+from frolic.sam3d.adapter import KEEP, Sam3dBody
+from frolic.sam3d.prompts import Prompts
 
 log = get_logger(__name__)
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from frolic3d.config import SelectConfig
+from frolic.config import SelectConfig
 
 
 def auto_select(people: list[dict[str, Any]], cfg: SelectConfig) -> tuple[list[str], dict[str, list[str]]]:

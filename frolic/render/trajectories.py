@@ -6,12 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
-from frolic3d.config import RenderConfig
-from frolic3d.io.video import write_video
-from frolic3d.log import get_logger
-from frolic3d.render.room import RoomView
-from frolic3d.render.scene import Scene, output_times, render_window
-from frolic3d.skeleton import J
+from frolic.config import RenderConfig
+from frolic.io.video import write_video
+from frolic.log import get_logger
+from frolic.render.room import RoomView
+from frolic.render.scene import Scene, output_times, render_window
+from frolic.skeleton import J
 
 log = get_logger(__name__)
 

@@ -16,12 +16,12 @@ import numpy as np
 import roma
 import torch
 
-from frolic3d.config import FitConfig, PersonConfig
-from frolic3d.fit.anny_model import Body, joint_weights
-from frolic3d.fit.biomech import BiomechConstraints, BiomechSettings, leg_ik_init, rest_offsets
-from frolic3d.fit.filters import bridge_single_view, fill_interp, jumpy, smooth_series, soft_fade, speed_weights
-from frolic3d.fit.root import RootParam, geodesic_acceleration
-from frolic3d.fit.shape import (
+from frolic.config import FitConfig, PersonConfig
+from frolic.fit.anny_model import Body, joint_weights
+from frolic.fit.biomech import BiomechConstraints, BiomechSettings, leg_ik_init, rest_offsets
+from frolic.fit.filters import bridge_single_view, fill_interp, jumpy, smooth_series, soft_fade, speed_weights
+from frolic.fit.root import RootParam, geodesic_acceleration
+from frolic.fit.shape import (
     GROUP_SEGMENT_LABELS,
     FixedPhenotype,
     LengthTargets,
@@ -32,9 +32,9 @@ from frolic3d.fit.shape import (
     standing_ankle_height,
     weight_muscle_for_mass,
 )
-from frolic3d.geometry import kabsch
-from frolic3d.log import get_logger
-from frolic3d.skeleton import (
+from frolic.geometry import kabsch
+from frolic.log import get_logger
+from frolic.skeleton import (
     JOINT_NAMES,
     MHR70_BODY,
     MHR70_HIPS,
@@ -165,7 +165,7 @@ class PersonFitter:
         return abs(vol) * self.cfg.density_kg_m3
 
     def _rest_slot(self, rest_heads: torch.Tensor, rest_tails: torch.Tensor, j: int) -> torch.Tensor:
-        from frolic3d.skeleton import ANNY_POINTS
+        from frolic.skeleton import ANNY_POINTS
 
         idx = self.body.idx
         if j == 0:
@@ -174,7 +174,7 @@ class PersonFitter:
         return rest_heads[idx[b]] if e == "h" else rest_tails[idx[b]]
 
     def _rest_lengths(self, rest_heads: torch.Tensor, rest_tails: torch.Tensor, targets: LengthTargets) -> torch.Tensor:
-        from frolic3d.fit.shape import LEN_GROUPS
+        from frolic.fit.shape import LEN_GROUPS
 
         out = []
         for g in targets.groups:

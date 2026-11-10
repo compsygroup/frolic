@@ -12,16 +12,16 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.transform import Rotation
 
-from frolic3d.geometry import Camera, box_iou
-from frolic3d.io.calib import CameraSet, load_cameras
-from frolic3d.io.detections import Detections
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26, J
+from frolic.geometry import Camera, box_iou
+from frolic.io.calib import CameraSet, load_cameras
+from frolic.io.detections import Detections
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26, J
 
 log = get_logger(__name__)
 
-SCHEMA = "frolic3d.metrics/1"
+SCHEMA = "frolic.metrics/1"
 VERTEX_STRIDE = 10
 KP_JOINTS = [j for j in range(len(HALPE26)) if j not in (J["pelvis"], J["neck"], J["head"], J["toe_l"], J["toe_r"])]
 
@@ -138,7 +138,7 @@ def violations_from_fit(fit_npz: Path) -> dict[str, Any]:
     try:
         import torch
 
-        from frolic3d.fit.biomech import BiomechConstraints  # noqa: F401
+        from frolic.fit.biomech import BiomechConstraints  # noqa: F401
 
         z = np.load(fit_npz, allow_pickle=False)
         if "limit_excess_deg" in z.files:

@@ -5,16 +5,16 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.calib import load_cameras, save_cameras
-from frolic3d.io.detections import load_all
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.track.associate import associate
-from frolic3d.track.identity import assemble_identities
-from frolic3d.track.refine import refine_tracks
-from frolic3d.track.reid import OsnetEmbedder, centre_embeddings, embed_tracks, weights_path
+from frolic.config import FrolicConfig
+from frolic.io.calib import load_cameras, save_cameras
+from frolic.io.detections import load_all
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.track.associate import associate
+from frolic.track.identity import assemble_identities
+from frolic.track.refine import refine_tracks
+from frolic.track.reid import OsnetEmbedder, centre_embeddings, embed_tracks, weights_path
 
 log = get_logger(__name__)
 
@@ -39,7 +39,7 @@ def _embeddings(cfg: FrolicConfig, tr: Tracks, dets, videos: dict[str, Any]):
 
 def _floor(cfg: FrolicConfig, tr: Tracks, cams, step: str):
     try:
-        from frolic3d.calib import floor
+        from frolic.calib import floor
     except ImportError:
         log.warning("floor module unavailable: %s skipped", step)
         return tr, cams, {}

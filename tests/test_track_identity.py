@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from frolic3d.config import TrackConfig
-from frolic3d.io.tracks import Tracks
-from frolic3d.skeleton import N_JOINTS, J
-from frolic3d.track.associate import associate
-from frolic3d.track.identity import assemble_identities, bridge_gaps
+from frolic.config import TrackConfig
+from frolic.io.tracks import Tracks
+from frolic.skeleton import N_JOINTS, J
+from frolic.track.associate import associate
+from frolic.track.identity import assemble_identities, bridge_gaps
 
 
 def _raw_split_tracks(cams, two_people, gt_detections):

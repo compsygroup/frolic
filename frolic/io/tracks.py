@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.skeleton import N_JOINTS
+from frolic.skeleton import N_JOINTS
 
 
 @dataclass

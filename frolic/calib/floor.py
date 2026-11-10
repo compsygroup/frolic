@@ -6,11 +6,11 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.geometry import level_transform, plane_from_points
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.tracks import Tracks
-from frolic3d.log import get_logger
-from frolic3d.skeleton import J
+from frolic.geometry import level_transform, plane_from_points
+from frolic.io.calib import CameraSet
+from frolic.io.tracks import Tracks
+from frolic.log import get_logger
+from frolic.skeleton import J
 
 log = get_logger(__name__)
 

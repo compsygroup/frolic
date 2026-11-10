@@ -1,6 +1,6 @@
 # Configuration reference
 
-Generated from `frolic3d/config.py` by `docs/gen_config.py`.
+Generated from `frolic/config.py` by `docs/gen_config.py`.
 `frolic init` writes a commented template with these defaults.
 
 Paths are resolved relative to the configuration file. Unknown keys are rejected.
@@ -153,8 +153,11 @@ Which people to reconstruct and how they are chosen.
 | `select.max_people` | `int` | `0` |  |
 | `select.ids` | `list[str]` | `[]` | config/interactive: identity ids to keep |
 | `select.labels` | `dict[str, str]` | `{}` | identity id -> display name |
-| `select.picker` | `'cli' or 'opencv' or 'matplotlib' or 'file'` | `cli` |  |
-| `select.selection_file` | `pathlib.Path or None` | `None` | headless: text file with one id per line |
+| `select.selection_file` | `pathlib.Path or None` | `None` | interactive: text file with one id per line; when it exists it answers the stage without the page |
+| `select.host` | `str` | `127.0.0.1` | interactive: address the person-picker page is served on |
+| `select.port` | `int` | `8770` | interactive: picker port (a free port is used when busy) |
+| `select.open_browser` | `bool` | `True` | interactive: open the picker page in the default browser |
+| `select.timeout_s` | `float` | `0.0` | interactive: give up after this many seconds without a Submit (0 = wait) |
 | `select.sheet_tiles` | `int` | `8` |  |
 | `select.spans_min_views` | `int` | `0` | > 0: keep only spans where the person is seen by >= k views |
 | `select.spans_min_s` | `float` | `1.0` |  |

@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-import io
 import json
+import urllib.error
+import urllib.request
 
 import numpy as np
 import pytest
 
-from frolic3d.config import FrolicConfig, SelectConfig
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.select import stage
-from frolic3d.select.filters import auto_select
-from frolic3d.select.picker import pick_cli, pick_file
-from frolic3d.select.sheet import contact_sheet
-from frolic3d.select.stage import visibility_spans
-from frolic3d.synthetic import make_scene
-from frolic3d.track.associate import associate
+from frolic.config import FrolicConfig, SelectConfig
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.select import stage
+from frolic.select.filters import auto_select
+from frolic.select.picker import pick_browser, pick_file, tunnel_hint
+from frolic.select.sheet import contact_sheet
+from frolic.select.stage import visibility_spans
+from frolic.synthetic import make_scene
+from frolic.track.associate import associate
 
 PEOPLE = [
     {"id": "p0", "frames": 300, "duration_s": 20.0, "stature_m": 1.72, "median_views": 3.0},
@@ -37,12 +38,40 @@ def test_auto_filters():
     assert ids == ["p0", "p2"]
 
 
-def test_pick_file_and_cli(tmp_path):
+def _submit(ids):
+    def go(url):
+        page = urllib.request.urlopen(url).read().decode()
+        assert "type='checkbox'" in page
+        req = urllib.request.Request(url + "select", json.dumps({"ids": []}).encode(), method="POST")
+        with pytest.raises(urllib.error.HTTPError):  # empty selection refused
+            urllib.request.urlopen(req)
+        req = urllib.request.Request(url + "select", json.dumps({"ids": ids}).encode(), method="POST")
+        assert urllib.request.urlopen(req).status == 200
+
+    return go
+
+
+def test_pick_file_and_browser(tmp_path):
     f = tmp_path / "sel.txt"
     f.write_text("p1  # the child\n0\nbogus\n")
     assert pick_file(f, ["p0", "p1", "p2"]) == ["p1", "p0"]
-    assert pick_cli(["p0", "p1"], PEOPLE, stream=io.StringIO("1\n")) == ["p1"]
-    assert pick_cli(["p0", "p1"], PEOPLE, stream=io.StringIO("\n")) == ["p0", "p1"]
+    got = pick_browser(["p0", "p1", "p2"], PEOPLE, {}, port=0, open_browser=False, on_ready=_submit(["p2", "p0", "zz"]))
+    assert got == ["p0", "p2"]
+
+
+def test_tunnel_hint():
+    slurm = tunnel_hint("127.0.0.1", 8770, {"USER": "u", "SLURM_JOB_ID": "9", "SLURMD_NODENAME": "gpu-1", "SLURM_SUBMIT_HOST": "login1"})
+    assert "ssh -N -L 8770:127.0.0.1:8770 -J u@login1 u@gpu-1" in slurm[1]
+    wide = tunnel_hint("0.0.0.0", 8770, {"USER": "u", "SLURM_JOB_ID": "9", "SLURMD_NODENAME": "gpu-1", "SLURM_SUBMIT_HOST": "login1"})
+    assert "ssh -N -L 8770:gpu-1:8770 u@login1" in wide[1]
+    ws = tunnel_hint("127.0.0.1", 8771, {"USER": "u", "TERM_PROGRAM": "vscode"})
+    assert ws[0].startswith("VS Code") and ws[1].startswith("  ssh -N -L 8771:127.0.0.1:8771 u@")
+    assert tunnel_hint("10.0.0.5", 8770, {"USER": "u"}) == []
+
+
+def test_pick_browser_timeout():
+    with pytest.raises(TimeoutError):
+        pick_browser(["p0"], PEOPLE, {}, port=0, open_browser=False, timeout_s=0.2)
 
 
 def test_visibility_spans():
@@ -90,7 +119,7 @@ def _prepare(scene, tmp_path, select: dict, people_cfg=None):
         d = Detections.load(scene_dir / "gt" / f"{c}.npz")
         d.save(work.stage_dir("detect") / f"{c}.npz")
         dets[c] = d
-    from frolic3d.io.calib import load_cameras
+    from frolic.io.calib import load_cameras
 
     cs = load_cameras(scene_dir / "calib" / "cameras.json")
     tr = associate(dets, cs, cfg.track, info["fps"], info["n_frames"])
@@ -137,7 +166,7 @@ def test_stage_file_mode_and_spans(scene, tmp_path):
     cfg, work, _, _, _ = _prepare(
         scene,
         tmp_path,
-        {"mode": "interactive", "picker": "file", "selection_file": str(f), "spans_min_views": 3, "spans_min_s": 0.2},
+        {"mode": "interactive", "selection_file": str(f), "spans_min_views": 3, "spans_min_s": 0.2},
         {"p0": {"label": "adult"}},
     )
     out = stage.run(cfg, work)
@@ -145,6 +174,13 @@ def test_stage_file_mode_and_spans(scene, tmp_path):
     sel = Tracks.load(work.tracks_selected)
     assert sel.labels == {"p0": "adult"}
     assert (sel.n_views()[0][sel.has_3d[0]] >= 3).all()
+
+
+def test_stage_interactive_browser(scene, tmp_path):
+    cfg, work, _, _, _ = _prepare(scene, tmp_path, {"mode": "interactive", "port": 0, "open_browser": False})
+    out = stage.run(cfg, work, on_ready=_submit(["p1"]))
+    assert out["ids"] == ["p1"] and out["mode"] == "browser"
+    assert (work.stage_dir("select") / "picked.txt").read_text().split() == ["p1"]
 
 
 def test_stage_auto_mode(scene, tmp_path):

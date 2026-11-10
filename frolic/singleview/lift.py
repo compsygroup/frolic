@@ -8,13 +8,13 @@ from typing import Any
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
 
-from frolic3d.config import SingleViewConfig
-from frolic3d.geometry import Camera, ray_point_distance, ray_ray_closest, rays_intersection
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26, HALPE26_HIP, HALPE26_TORSO, N_JOINTS, SEGMENTS, J
+from frolic.config import SingleViewConfig
+from frolic.geometry import Camera, ray_point_distance, ray_ray_closest, rays_intersection
+from frolic.io.calib import CameraSet
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26, HALPE26_HIP, HALPE26_TORSO, N_JOINTS, SEGMENTS, J
 
 log = get_logger(__name__)
 RelDepth = dict[

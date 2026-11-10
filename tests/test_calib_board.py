@@ -6,11 +6,11 @@ import cv2
 import numpy as np
 import pytest
 
-from frolic3d.calib import board as B
-from frolic3d.config import BoardConfig
-from frolic3d.geometry import Camera, rodrigues, rotation_angle_deg, umeyama
-from frolic3d.io.calib import from_gui_json, to_gui_json
-from frolic3d.synthetic import ring_cameras
+from frolic.calib import board as B
+from frolic.config import BoardConfig
+from frolic.geometry import Camera, rodrigues, rotation_angle_deg, umeyama
+from frolic.io.calib import from_gui_json, to_gui_json
+from frolic.synthetic import ring_cameras
 
 SPEC = B.BoardSpec(8, 6, 0.095, 0.071, "DICT_4X4_100", True)
 PPS = 70  # board image pixels per square
@@ -223,7 +223,7 @@ def test_real_board_videos():
     ref = os.environ.get("FROLIC_TEST_BOARD_REF")
     if not vdir or not ref:
         pytest.skip("set FROLIC_TEST_BOARD_DIR and FROLIC_TEST_BOARD_REF")
-    from frolic3d.io.video import probe_video
+    from frolic.io.video import probe_video
 
     vids = {f"cam{k}": Path(vdir) / f"Room6 CAM {k} 01.mp4" for k in range(1, 7)}
     vids = {k: v for k, v in vids.items() if v.exists()}

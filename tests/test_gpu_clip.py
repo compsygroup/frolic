@@ -13,9 +13,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.workdir import WorkDir
-from frolic3d.pipeline import run_pipeline
+from frolic.config import FrolicConfig
+from frolic.io.workdir import WorkDir
+from frolic.pipeline import run_pipeline
 
 CLIP = os.environ.get("FROLIC_TEST_CLIP")
 

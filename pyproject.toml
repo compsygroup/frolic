@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "frolic3d"
+name = "frolic"
 version = "0.1.0"
-description = "FROLIC 3D: multi-view, multi-person, child-aware 3D human mesh pipeline"
+description = "FROLIC: multi-view, multi-person, child-aware 3D human mesh pipeline"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "FROLIC 3D contributors" }]
+authors = [{ name = "FROLIC contributors" }]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Image Recognition",
@@ -32,13 +32,13 @@ anny = ["anny>=0.3"]
 render = ["pyrender>=0.1.45", "trimesh>=4", "PyOpenGL==3.1.0", "Pillow>=10"]
 sync = ["soundfile>=0.12"]
 dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "pre-commit>=3"]
-all = ["frolic3d[detect,track,anny,render,sync]"]
+all = ["frolic[detect,track,anny,render,sync]"]
 
 [project.scripts]
-frolic = "frolic3d.cli:main"
+frolic = "frolic.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["frolic3d*"]
+include = ["frolic*"]
 
 [tool.ruff]
 line-length = 120
@@ -64,5 +64,5 @@ markers = [
 filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]
 
 [tool.coverage.run]
-source = ["frolic3d"]
-omit = ["frolic3d/detect/rtmlib_adapter.py", "frolic3d/sam3d/adapter.py", "frolic3d/track/reid.py"]
+source = ["frolic"]
+omit = ["frolic/detect/rtmlib_adapter.py", "frolic/sam3d/adapter.py", "frolic/track/reid.py"]

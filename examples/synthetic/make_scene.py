@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from frolic3d.synthetic import make_scene
+from frolic.synthetic import make_scene
 
 
 def main() -> None:

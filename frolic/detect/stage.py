@@ -10,14 +10,14 @@ from typing import Any
 import cv2
 import numpy as np
 
-from frolic3d.config import FrolicConfig
-from frolic3d.detect.adapter import PoseDetector, make_detector
-from frolic3d.detect.masks import masked_rows, static_rows
-from frolic3d.io.detections import N_KP, Detections
-from frolic3d.io.video import iter_frames, probe_video
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26_TORSO
+from frolic.config import FrolicConfig
+from frolic.detect.adapter import PoseDetector, make_detector
+from frolic.detect.masks import masked_rows, static_rows
+from frolic.io.detections import N_KP, Detections
+from frolic.io.video import iter_frames, probe_video
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26_TORSO
 
 log = get_logger(__name__)
 TORSO_POLY = [5, 6, 12, 11]

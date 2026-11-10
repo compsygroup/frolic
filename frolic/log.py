@@ -8,11 +8,11 @@ _FMT = "%(asctime)s %(levelname).1s %(name)s: %(message)s"
 
 
 def get_logger(name: str) -> logging.Logger:
-    return logging.getLogger(name if name.startswith("frolic3d") else f"frolic3d.{name}")
+    return logging.getLogger(name if name.startswith("frolic") else f"frolic.{name}")
 
 
 def configure(level: str = "INFO", log_file: Path | None = None) -> None:
-    root = logging.getLogger("frolic3d")
+    root = logging.getLogger("frolic")
     root.setLevel(getattr(logging, level.upper(), logging.INFO))
     root.propagate = False
     for h in list(root.handlers):

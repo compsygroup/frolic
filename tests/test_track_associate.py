@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 
-from frolic3d.config import TrackConfig
-from frolic3d.skeleton import J
-from frolic3d.synthetic import person_track, project_people
-from frolic3d.track.associate import associate, estimate_people
+from frolic.config import TrackConfig
+from frolic.skeleton import J
+from frolic.synthetic import person_track, project_people
+from frolic.track.associate import associate, estimate_people
 
 
 def _match(tr, people):

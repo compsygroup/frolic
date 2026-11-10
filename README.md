@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/FROLIC3D_logo.png" width="500" alt="FROLIC3D">
+  <img src="docs/FROLIC3D_logo.png" width="500" alt="FROLIC">
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@ body phenotype when known.
 
 ```bash
 git clone <this repository> && cd FROLIC3D
-conda env create -f environment.yml && conda activate frolic3d      # everything, CUDA builds of torch / onnxruntime
+conda env create -f environment.yml && conda activate frolic      # everything, CUDA builds of torch / onnxruntime
 # or a minimal install plus the extras you need:
 pip install -e ".[detect,track,anny,render,sync,dev]"
 ```
@@ -97,7 +97,7 @@ environment (for example SAM 3D Body in its own env) are declared in `compute.st
 
 ## Configuration
 
-One YAML file validated against `frolic3d/config.py`; unknown keys are errors. `frolic init` writes the template with
+One YAML file validated against `frolic/config.py`; unknown keys are errors. `frolic init` writes the template with
 every default and a comment per option; `docs/config.md` is the reference generated from the model.
 
 ```yaml
@@ -114,15 +114,18 @@ render:  {what: [overlay, grid, room, trajectories], fps: 30, crf: 18}
 
 ## Person selection
 
-Tracking reconstructs everyone; `select` decides who goes on to the body fit.
+Tracking reconstructs everyone; `select` decides who goes on to the body fit. The ids (`p0`, `p1`, ...) are the final
+identities from `track` (after cross-view association, re-id and identity assembly, merges/splits/drops applied).
 
 - `select.mode: auto` (default): keep identities seen by at least `min_views` cameras somewhere, tracked for at
   least `min_track_s`, within optional height bounds, `children_only` (stature below `child_height_m`), at most
   `max_people`. Labels come from `select.labels` or `people.<id>.label`.
-- `select.mode: interactive`: the stage writes a numbered contact sheet (`work/select/sheet.jpg` + `sheet.html`, one row
-  per identity with crops from each camera) and asks for ids. `select.picker: cli` reads them from the terminal,
-  `opencv` / `matplotlib` open a small picker, `file` reads `select.selection_file` (one id per line) so that a headless
-  job can be answered from another machine.
+- `select.mode: interactive`: the stage serves a local page (`http://127.0.0.1:8770/`, opened in the browser) with one
+  row per identity (crops from each camera, height, time tracked, cameras) and a checkbox each; tick the people and press
+  Submit, and the pipeline continues. On a remote machine the stage prints the ssh tunnel command to copy (for a Slurm
+  job: through the login node to the compute node); VS Code Remote-SSH forwards the port by itself.
+  The choice is saved to `work/select/picked.txt`; set `select.selection_file` to a file of ids (one per line) to answer
+  the stage without the page, e.g. to repeat a saved choice.
 - `select.mode: config`: `select.ids` lists the identities to keep.
 
 Identity assembly can be corrected before selection with `track.merge` (same person split in two ids),
@@ -197,7 +200,7 @@ come from `compute.slurm`. GPU stages (`detect`, `track`, `sam3d`, `fit`, `rende
 
 | symptom | cause / fix |
 |---|---|
-| `no offscreen OpenGL backend` | install `frolic3d[render]`; on a GPU node use EGL (`PYOPENGL_PLATFORM=egl`, PyOpenGL 3.1.0 is the version pyrender 0.1.45 works with); on CPU nodes install OSMesa and set `render.backend: osmesa` |
+| `no offscreen OpenGL backend` | install `frolic[render]`; on a GPU node use EGL (`PYOPENGL_PLATFORM=egl`, PyOpenGL 3.1.0 is the version pyrender 0.1.45 works with); on CPU nodes install OSMesa and set `render.backend: osmesa` |
 | `calib.mode = bootstrap needs calib.reference_height_m` | the calibration-free mode needs one known stature for metric scale |
 | sync fails or closure above `max_closure_ms` | audio too quiet or clocks drifting; set `sync.manual_offsets_s` or trim the videos yourself and set `input.synced: true` |
 | detector finds a poster / mirror reflection | add a polygon to `detect.masks` for that camera; static detections are also suppressed automatically (`detect.static_occupancy`) |
@@ -216,8 +219,8 @@ The unit and end-to-end tests mock every heavy model. `make test-gpu` runs the r
 ## Citation
 
 ```
-@misc{frolic3d,
-  title  = {FROLIC 3D: Full-body Reconstruction Of Little ones and Interacting Caregivers},
+@misc{frolic,
+  title  = {FROLIC: Full-body Reconstruction Of Little ones and Interacting Caregivers},
   author = {<authors>},
   year   = {<year>},
   url    = {<repository url>}

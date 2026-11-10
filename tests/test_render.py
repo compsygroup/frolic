@@ -8,10 +8,10 @@ import pytest
 from conftest import can_render
 from test_export import build_work
 
-from frolic3d.config import RenderConfig
-from frolic3d.export.stage import run as run_export
-from frolic3d.render.scene import catmull_rom, ease, look_at, output_times
-from frolic3d.synthetic import make_scene
+from frolic.config import RenderConfig
+from frolic.export.stage import run as run_export
+from frolic.render.scene import catmull_rom, ease, look_at, output_times
+from frolic.synthetic import make_scene
 
 pytestmark = pytest.mark.skipif(not can_render(), reason="no offscreen OpenGL backend (pyrender EGL/OSMesa) available")
 
@@ -62,7 +62,7 @@ def tiny_export(tmp_path_factory):
         fps=15, tile_width=160, room_width=160, room_height=90, what=["overlay", "grid", "room", "trajectories"]
     )
     run_export(cfg, work)
-    from frolic3d.render.backend import select_backend
+    from frolic.render.backend import select_backend
 
     select_backend("auto")
     return work, cfg
@@ -70,7 +70,7 @@ def tiny_export(tmp_path_factory):
 
 def test_render_stage_all_targets(tiny_export):
     work, cfg = tiny_export
-    from frolic3d.render.stage import run
+    from frolic.render.stage import run
 
     info = run(cfg, work)
     out = work.stage_dir("render")
@@ -85,8 +85,8 @@ def test_render_stage_all_targets(tiny_export):
 
 def test_render_window_and_fps(tiny_export):
     work, cfg = tiny_export
-    from frolic3d.render.room import render_room
-    from frolic3d.render.scene import load_scene
+    from frolic.render.room import render_room
+    from frolic.render.scene import load_scene
 
     scene = load_scene(work.stage_dir("export"), work.videos_json)
     assert len(scene.people) == 2 and len(scene.cams) == 4
@@ -97,8 +97,8 @@ def test_render_window_and_fps(tiny_export):
 
 def test_render_overlay_with_distortion(tiny_export):
     work, _cfg = tiny_export
-    from frolic3d.io.calib import load_cameras
-    from frolic3d.render.overlay import ViewRenderer
+    from frolic.io.calib import load_cameras
+    from frolic.render.overlay import ViewRenderer
 
     cams = load_cameras(work.stage_dir("export") / "cameras.json")
     cam = cams[0]

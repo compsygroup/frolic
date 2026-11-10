@@ -1,15 +1,24 @@
-"""Interactive / headless pickers that return the ids to keep."""
+"""Browser person picker: serve the contact sheet as a local page with one checkbox per person and wait for Submit.
+
+`select.selection_file` (one id per line) answers the stage without the page, e.g. to repeat a saved choice.
+"""
 
 from __future__ import annotations
 
+import getpass
+import html
+import json
 import os
+import socket
 import sys
+import threading
+import webbrowser
+from collections.abc import Callable
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-
-from frolic3d.log import get_logger
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 
@@ -32,121 +41,177 @@ def pick_file(path: Path, ids: list[str]) -> list[str]:
     return _parse_ids(" ".join(ln for ln in lines if ln), ids)
 
 
-def pick_cli(ids: list[str], people: list[dict[str, Any]], stream=None) -> list[str]:
+_PAGE = """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FROLIC person picker</title><style>
+body{{font-family:system-ui,sans-serif;background:#16181b;color:#e4e4e4;margin:16px}}
+.p{{border:2px solid #333;border-radius:6px;padding:8px;margin:8px 0;cursor:pointer}}
+.p.on{{border-color:#3fa34d;background:#18241a}} .p img{{height:150px;margin:2px;border-radius:3px}}
+.st{{color:#9ab;font-size:13px}} label{{font-size:17px;font-weight:600;cursor:pointer}}
+.bar{{position:sticky;top:0;background:#16181b;padding:8px 0;border-bottom:1px solid #333}}
+button{{font-size:15px;padding:6px 14px;margin-right:6px}} #msg{{color:#fc6;margin-left:8px}}
+</style></head><body>
+<div class="bar"><b>Tick the people to reconstruct, then Submit.</b><br>
+<button onclick="setAll(true)">All</button><button onclick="setAll(false)">None</button>
+<button id="go" onclick="submitSel()">Submit</button><span id="msg"></span></div>
+{rows}
+<script>
+const boxes=[...document.querySelectorAll('input[type=checkbox]')];
+function sync(){{boxes.forEach(b=>b.closest('.p').classList.toggle('on',b.checked));
+ document.getElementById('go').disabled=!boxes.some(b=>b.checked);}}
+function setAll(v){{boxes.forEach(b=>b.checked=v);sync();}}
+boxes.forEach(b=>b.onchange=sync);
+document.querySelectorAll('.p').forEach(d=>d.onclick=e=>{{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='LABEL'){{
+ const b=d.querySelector('input');b.checked=!b.checked;sync();}}}});
+async function submitSel(){{const ids=boxes.filter(b=>b.checked).map(b=>b.value);
+ const r=await fetch('select',{{method:'POST',headers:{{'content-type':'application/json'}},body:JSON.stringify({{ids:ids}})}});
+ document.getElementById('msg').textContent=await r.text();
+ if(r.ok){{boxes.forEach(b=>b.disabled=true);document.getElementById('go').disabled=true;}}}}
+sync();
+</script></body></html>"""
+
+
+def picker_page(ids: list[str], people: list[dict[str, Any]], imgs: dict[str, list[str]], checked: list[str]) -> str:
+    """imgs: id -> list of <img> tags (base64 tiles from the contact sheet)."""
     info = {p["id"]: p for p in people}
-    stream = stream or sys.stdin
-    print("tracked people (index  id  stature  duration  views):", file=sys.stderr)
+    rows = []
     for k, pid in enumerate(ids):
         p = info.get(pid, {})
         st = p.get("stature_m")
-        print(
-            f"  {k:2d}  {pid:6s}  {st:.2f} m  {p.get('duration_s', 0):6.1f} s  {p.get('median_views', 0):.0f}"
-            if st
-            else f"  {k:2d}  {pid}",
-            file=sys.stderr,
+        stats = (
+            f"height {st:.2f} m; " if st else ""
+        ) + f"tracked {p.get('duration_s', 0):.1f} s; median {p.get('median_views', 0):.0f} cameras"
+        on = " checked" if pid in checked else ""
+        rows.append(
+            f"<div class='p'><label><input type='checkbox' value='{html.escape(pid)}'{on}> [{k}] {html.escape(pid)}</label>"
+            f" <span class='st'>{stats}</span><br>{''.join(imgs.get(pid, []))}</div>"
         )
-    print("ids to keep (comma separated; empty = all): ", end="", file=sys.stderr, flush=True)
-    line = stream.readline()
-    sel = _parse_ids(line, ids)
-    return sel if sel else list(ids)
+    return _PAGE.format(rows="\n".join(rows))
 
 
-def has_display() -> bool:
-    return bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")) or sys.platform in ("win32", "darwin")
+def tunnel_hint(host: str, port: int, env: dict[str, str] | None = None) -> list[str]:
+    """How to reach the picker from another computer: ssh commands for this machine (Slurm job: via the login node)."""
+    env = dict(os.environ if env is None else env)
+    user = env.get("USER") or getpass.getuser()
+    fqdn = socket.getfqdn()
+    lines = []
+    if env.get("SLURM_JOB_ID"):
+        node = env.get("SLURMD_NODENAME") or socket.gethostname()
+        login = env.get("SLURM_SUBMIT_HOST") or "<login-node>"
+        lines.append(f"Slurm job {env['SLURM_JOB_ID']} on {node}; on your computer run:")
+        if host in ("0.0.0.0", "::"):
+            lines.append(f"  ssh -N -L {port}:{node}:{port} {user}@{login}")
+        else:
+            lines.append(f"  ssh -N -L {port}:127.0.0.1:{port} -J {user}@{login} {user}@{node}")
+    elif host in ("127.0.0.1", "localhost", "::1", "0.0.0.0", "::"):
+        if env.get("TERM_PROGRAM") == "vscode" or env.get("VSCODE_IPC_HOOK_CLI"):
+            lines.append("VS Code forwards this port by itself (Ports tab); otherwise, on your computer run:")
+        else:
+            lines.append("from another computer run:")
+        lines.append(f"  ssh -N -L {port}:127.0.0.1:{port} {user}@{fqdn}")
+    else:
+        return []
+    lines.append(f"  then open http://127.0.0.1:{port}/")
+    return lines
 
 
-def pick_opencv(sheet_jpg: Path, ids: list[str], row_h: int = 220) -> list[str] | None:
-    """Click rows to toggle, press Enter to accept. None when no window can be shown."""
-    import cv2
+def pick_browser(
+    ids: list[str],
+    people: list[dict[str, Any]],
+    imgs: dict[str, list[str]],
+    host: str = "127.0.0.1",
+    port: int = 8770,
+    open_browser: bool = True,
+    timeout_s: float = 0.0,
+    checked: list[str] | None = None,
+    on_ready: Callable[[str], None] | None = None,
+) -> list[str]:
+    """Serve the picker page and block until a non-empty selection is submitted (timeout_s 0 = wait for ever)."""
+    page = picker_page(ids, people, imgs, list(ids) if checked is None else checked).encode()
+    done = threading.Event()
+    result: list[str] = []
 
-    if not has_display():
-        return None
-    img = cv2.imread(str(sheet_jpg))
-    if img is None:
-        return None
-    state = {pid: True for pid in ids}
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *a: Any) -> None:
+            pass
 
-    def draw() -> np.ndarray:
-        d = img.copy()
-        for k, pid in enumerate(ids):
-            col = (0, 200, 0) if state[pid] else (0, 0, 220)
-            cv2.rectangle(d, (0, k * row_h), (d.shape[1] - 1, (k + 1) * row_h - 1), col, 4)
-        return d
+        def _send(self, code: int, body: bytes, ctype: str = "text/plain; charset=utf-8") -> None:
+            self.send_response(code)
+            self.send_header("content-type", ctype)
+            self.send_header("content-length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
-    def on_mouse(ev, x, y, *_):
-        if ev == cv2.EVENT_LBUTTONDOWN and y // row_h < len(ids):
-            pid = ids[y // row_h]
-            state[pid] = not state[pid]
-            cv2.imshow("frolic select", draw())
+        def do_GET(self) -> None:
+            if self.path.split("?")[0] in ("/", "/index.html"):
+                self._send(200, page, "text/html; charset=utf-8")
+            else:
+                self._send(404, b"not found")
+
+        def do_POST(self) -> None:
+            if self.path != "/select" or done.is_set():
+                self._send(409 if done.is_set() else 404, b"selection already submitted" if done.is_set() else b"")
+                return
+            try:
+                got = json.loads(self.rfile.read(int(self.headers.get("content-length", 0))))["ids"]
+            except (ValueError, KeyError, TypeError):
+                self._send(400, b"bad request")
+                return
+            sel = [i for i in ids if i in {str(g) for g in got}]
+            if not sel:
+                self._send(400, b"tick at least one person")
+                return
+            result.extend(sel)
+            self._send(200, f"saved: {', '.join(sel)}. You can close this page.".encode())
+            done.set()
 
     try:
-        cv2.namedWindow("frolic select", cv2.WINDOW_NORMAL)
-        cv2.setMouseCallback("frolic select", on_mouse)
-        cv2.imshow("frolic select", draw())
-        while True:
-            k = cv2.waitKey(50) & 0xFF
-            if k in (13, 10, 27, ord("q")):
-                break
-        cv2.destroyAllWindows()
-    except cv2.error:
-        return None
-    return [pid for pid in ids if state[pid]]
-
-
-def pick_matplotlib(sheet_jpg: Path, ids: list[str], row_h: int = 220) -> list[str] | None:
+        srv = ThreadingHTTPServer((host, port), Handler)
+    except OSError:
+        log.warning("port %d busy: using a free port", port)
+        srv = ThreadingHTTPServer((host, 0), Handler)
+    url = f"http://{host}:{srv.server_address[1]}/"
+    th = threading.Thread(target=srv.serve_forever, daemon=True)
+    th.start()
+    hint = tunnel_hint(host, srv.server_address[1])
+    print("\n  FROLIC person picker: " + url, *("  " + h for h in hint), "", sep="\n", file=sys.stderr, flush=True)
+    for h in hint:
+        log.info("picker: %s", h.strip())
+    log.info("person picker at %s; waiting for Submit", url)
+    if open_browser:
+        try:
+            webbrowser.open(url)
+        except Exception:  # no browser on this machine: the URL is printed
+            pass
+    if on_ready is not None:
+        on_ready(url)
     try:
-        import matplotlib
-
-        if not has_display():
-            return None
-        import matplotlib.pyplot as plt
-    except ImportError:
-        return None
-    import cv2
-
-    img = cv2.imread(str(sheet_jpg))
-    if img is None:
-        return None
-    state = {pid: True for pid in ids}
-    fig, ax = plt.subplots(figsize=(12, 1.2 * len(ids) + 1))
-    ax.imshow(img[..., ::-1])
-    ax.set_title("click a row to toggle; close the window to accept")
-    rects = []
-    for k in range(len(ids)):
-        r = matplotlib.patches.Rectangle((0, k * row_h), img.shape[1], row_h, fill=False, lw=3, color="g")
-        ax.add_patch(r)
-        rects.append(r)
-
-    def on_click(ev):
-        if ev.ydata is None:
-            return
-        k = int(ev.ydata // row_h)
-        if k < len(ids):
-            state[ids[k]] = not state[ids[k]]
-            rects[k].set_color("g" if state[ids[k]] else "r")
-            fig.canvas.draw_idle()
-
-    fig.canvas.mpl_connect("button_press_event", on_click)
-    plt.show()
-    return [pid for pid in ids if state[pid]]
+        if not done.wait(timeout_s if timeout_s > 0 else None):
+            raise TimeoutError(f"no selection submitted at {url} within {timeout_s:.0f} s")
+    finally:
+        srv.shutdown()
+        srv.server_close()
+    return result
 
 
 def pick(
-    mode: str, ids: list[str], people: list[dict[str, Any]], sheet_jpg: Path, selection_file: Path | None
+    ids: list[str],
+    people: list[dict[str, Any]],
+    imgs: dict[str, list[str]],
+    sc: Any,
+    on_ready: Callable[[str], None] | None = None,
 ) -> tuple[list[str], str]:
-    """Dispatch by picker mode with graceful headless fallbacks; returns (ids, mode actually used)."""
-    if mode == "file" or (selection_file is not None and Path(selection_file).exists()):
-        if selection_file is None or not Path(selection_file).exists():
-            raise FileNotFoundError("select.picker = file needs select.selection_file")
-        return pick_file(Path(selection_file), ids), "file"
-    if mode in ("opencv", "matplotlib"):
-        sel = pick_opencv(sheet_jpg, ids) if mode == "opencv" else pick_matplotlib(sheet_jpg, ids)
-        if sel is not None:
-            return sel, mode
-        log.warning("no display for the %s picker: falling back to the terminal", mode)
-    if sys.stdin is not None and sys.stdin.isatty():
-        return pick_cli(ids, people), "cli"
-    log.warning(
-        "no terminal: keeping every person; write select.selection_file (one id per line) and rerun with --force"
+    """selection_file when it exists, else the browser picker; returns (ids, mode used)."""
+    if sc.selection_file is not None and Path(sc.selection_file).exists():
+        return pick_file(Path(sc.selection_file), ids), "file"
+    sel = pick_browser(
+        ids,
+        people,
+        imgs,
+        host=sc.host,
+        port=sc.port,
+        open_browser=sc.open_browser,
+        timeout_s=sc.timeout_s,
+        checked=[i for i in sc.ids if i in ids] or None,
+        on_ready=on_ready,
     )
-    return list(ids), "all"
+    return sel, "browser"

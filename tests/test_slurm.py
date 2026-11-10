@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.workdir import STAGES, WorkDir
-from frolic3d.slurm import sbatch_script, submit_pipeline
+from frolic.config import FrolicConfig
+from frolic.io.workdir import STAGES, WorkDir
+from frolic.slurm import sbatch_script, submit_pipeline
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def cfg(tmp_path):
     c = FrolicConfig(calib={"mode": "given", "given": str(tmp_path / "c.json")})
     c.input.work_dir = tmp_path / "work"
     c.compute.slurm.account = "proj"
-    c.compute.slurm.setup = ["module load cuda", "conda activate frolic3d"]
+    c.compute.slurm.setup = ["module load cuda", "conda activate frolic"]
     c.compute.slurm.partition_gpu = "gpuq"
     return c
 
@@ -25,7 +25,7 @@ def test_sbatch_script_headers(cfg, tmp_path):
     s = sbatch_script(cfg, work, "fit", tmp_path / "frolic.yaml", force=True)
     assert s.startswith("#!/bin/bash\n#SBATCH --job-name=frolic_fit")
     assert "--partition=gpuq" in s and "--gres=gpu:1" in s and "--account=proj" in s
-    assert "module load cuda\nconda activate frolic3d\n" in s
+    assert "module load cuda\nconda activate frolic\n" in s
     assert s.rstrip().endswith("frolic fit -c " + str(tmp_path / "frolic.yaml") + " --threads 8 --force")
     cpu = sbatch_script(cfg, work, "export", tmp_path / "frolic.yaml", force=False)
     assert "--partition=cpu" in cpu and "--gres" not in cpu and "--force" not in cpu

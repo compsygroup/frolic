@@ -6,13 +6,13 @@ from itertools import combinations
 
 import numpy as np
 
-from frolic3d.config import TrackConfig
-from frolic3d.geometry import Camera
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26, LIMBS, LIMBS_WEAK, N_JOINTS, J
+from frolic.config import TrackConfig
+from frolic.geometry import Camera
+from frolic.io.calib import CameraSet
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26, LIMBS, LIMBS_WEAK, N_JOINTS, J
 
 log = get_logger(__name__)
 
@@ -213,7 +213,7 @@ def _anipose_group(cams: CameraSet):
         from aniposelib.cameras import CameraGroup
     except ImportError:
         return None
-    from frolic3d.geometry import rotvec
+    from frolic.geometry import rotvec
 
     return CameraGroup([ACam(matrix=c.K, dist=np.zeros(5), rvec=rotvec(c.R), tvec=c.t, name=c.name) for c in cams])
 

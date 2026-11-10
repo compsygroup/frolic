@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from frolic3d.config import SingleViewConfig, TrackConfig
-from frolic3d.singleview.lift import interp_prior, lift_frames, rel_depth_from_keypoints, room_bounds, spans_of
-from frolic3d.skeleton import J
-from frolic3d.synthetic import person_track, project_people, ring_cameras
-from frolic3d.track.associate import associate
+from frolic.config import SingleViewConfig, TrackConfig
+from frolic.singleview.lift import interp_prior, lift_frames, rel_depth_from_keypoints, room_bounds, spans_of
+from frolic.skeleton import J
+from frolic.synthetic import person_track, project_people, ring_cameras
+from frolic.track.associate import associate
 
 
 def _scene(noise=0.5, gap=(18, 30), n=45, fps=15.0):
@@ -55,7 +55,7 @@ def test_lift_with_relative_depths():
     rel = {}
     for i in range(18, 30):
         d = (people[1][i] - people[1][i, J["pelvis"]]) @ cams["cam1"].axis
-        from frolic3d.skeleton import HALPE26
+        from frolic.skeleton import HALPE26
 
         rel[(pid, "cam1", i)] = {HALPE26[j]: float(d[j]) for j in range(len(HALPE26))}
     out, rep = lift_frames(tr, dets, cams, SingleViewConfig(), rel_depth=rel)
@@ -98,11 +98,11 @@ def test_helpers():
 
 
 def test_sam3d_depths_relift_single_view_frames(tmp_path):
-    from frolic3d.config import FrolicConfig
-    from frolic3d.io.workdir import WorkDir
-    from frolic3d.sam3d.adapter import expand17to70
-    from frolic3d.sam3d.run import ViewResults
-    from frolic3d.sam3d.stage import refine_single_view
+    from frolic.config import FrolicConfig
+    from frolic.io.workdir import WorkDir
+    from frolic.sam3d.adapter import expand17to70
+    from frolic.sam3d.run import ViewResults
+    from frolic.sam3d.stage import refine_single_view
 
     cams, people, dets, tr, k = _scene()
     work = WorkDir(tmp_path / "work")

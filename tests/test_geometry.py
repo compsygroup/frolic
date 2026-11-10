@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from frolic3d import geometry as g
-from frolic3d.synthetic import ring_cameras
+from frolic import geometry as g
+from frolic.synthetic import ring_cameras
 
 
 def test_project_undistort_roundtrip():

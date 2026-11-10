@@ -11,18 +11,18 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.calib import CameraSet, load_cameras
-from frolic3d.io.detections import load_all
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.sam3d.adapter import MockMhr, expand17to70, make_estimator, mock_mesh_from_joints
-from frolic3d.sam3d.mhr_fit import MhrFitter, PersonObservations
-from frolic3d.sam3d.prompts import Prompts, gather_prompts
-from frolic3d.sam3d.run import ViewResults, run_view
-from frolic3d.singleview.lift import lift_frames, rel_depth_from_keypoints
-from frolic3d.skeleton import HALPE26_TO_MHR70, MHR70_HIPS, MHR70_SHOULDERS, J
+from frolic.config import FrolicConfig
+from frolic.io.calib import CameraSet, load_cameras
+from frolic.io.detections import load_all
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.sam3d.adapter import MockMhr, expand17to70, make_estimator, mock_mesh_from_joints
+from frolic.sam3d.mhr_fit import MhrFitter, PersonObservations
+from frolic.sam3d.prompts import Prompts, gather_prompts
+from frolic.sam3d.run import ViewResults, run_view
+from frolic.singleview.lift import lift_frames, rel_depth_from_keypoints
+from frolic.skeleton import HALPE26_TO_MHR70, MHR70_HIPS, MHR70_SHOULDERS, J
 
 log = get_logger(__name__)
 

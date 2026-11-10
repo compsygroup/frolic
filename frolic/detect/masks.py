@@ -7,8 +7,8 @@ from collections import defaultdict
 import cv2
 import numpy as np
 
-from frolic3d.io.detections import Detections
-from frolic3d.log import get_logger
+from frolic.io.detections import Detections
+from frolic.log import get_logger
 
 
 log = get_logger(__name__)
@@ -89,7 +89,7 @@ def static_rows(
                 )
     if not static_boxes:
         return out
-    from frolic3d.geometry import box_iou
+    from frolic.geometry import box_iou
 
     for i, b in enumerate(det.box):
         out[i] = any(box_iou(b, sb) > iou_thr for sb in static_boxes)

@@ -6,10 +6,10 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.pipeline import GPU_STAGES, stages_from
+from frolic.config import FrolicConfig
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.pipeline import GPU_STAGES, stages_from
 
 log = get_logger(__name__)
 

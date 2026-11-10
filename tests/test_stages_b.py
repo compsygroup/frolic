@@ -7,14 +7,14 @@ import json
 import numpy as np
 import pytest
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.calib import load_cameras
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.pipeline import run_stage
-from frolic3d.skeleton import J
-from frolic3d.synthetic import make_scene
+from frolic.config import FrolicConfig
+from frolic.io.calib import load_cameras
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.pipeline import run_stage
+from frolic.skeleton import J
+from frolic.synthetic import make_scene
 
 
 @pytest.fixture(scope="module")
@@ -59,7 +59,7 @@ def pipeline(scene, tmp_path_factory):
     work.mark_done("sync")
     # calibrate is another stage's job: provide its output directly
     cs = load_cameras(scene_dir / "calib" / "cameras.json")
-    from frolic3d.io.calib import save_cameras
+    from frolic.io.calib import save_cameras
 
     save_cameras(cs, work.cameras)
     work.mark_done("calibrate")
@@ -116,10 +116,10 @@ def test_detections_schema(pipeline):
 
 def test_sam3d_model_path_with_mock_estimator(pipeline, monkeypatch):
     """Prompts -> per-view estimates on the decoded videos -> multi-view MHR fit, with the model replaced by MockSam3d."""
-    from frolic3d.sam3d import stage as sam3d_stage
-    from frolic3d.sam3d.adapter import MockSam3d
-    from frolic3d.sam3d.prompts import Prompts
-    from frolic3d.sam3d.run import ViewResults
+    from frolic.sam3d import stage as sam3d_stage
+    from frolic.sam3d.adapter import MockSam3d
+    from frolic.sam3d.prompts import Prompts
+    from frolic.sam3d.run import ViewResults
 
     cfg, work, info = pipeline
     if not work.is_done("singleview"):

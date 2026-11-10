@@ -5,10 +5,10 @@ import json
 import numpy as np
 from test_export import build_work, fake_mesh, write_fake_fit
 
-from frolic3d.export.stage import run as run_export
-from frolic3d.io.calib import load_cameras
-from frolic3d.io.detections import Detections
-from frolic3d.metrics.compute import (
+from frolic.export.stage import run as run_export
+from frolic.io.calib import load_cameras
+from frolic.io.detections import Detections
+from frolic.metrics.compute import (
     compute_metrics,
     flips,
     jitter,
@@ -17,7 +17,7 @@ from frolic3d.metrics.compute import (
     violations_from_fit,
     write_summary_csv,
 )
-from frolic3d.skeleton import N_JOINTS
+from frolic.skeleton import N_JOINTS
 
 
 def test_jitter_zero_for_linear_motion():
@@ -81,7 +81,7 @@ def test_compute_metrics_and_summary(tmp_path):
     out = work.stage_dir("export")
     with open(out / "metrics.json") as fh:
         m = json.load(fh)
-    assert m["schema"] == "frolic3d.metrics/1"
+    assert m["schema"] == "frolic.metrics/1"
     for p in ("p0", "p1"):
         pm = m["per_person"][p]
         assert pm["coverage_pct"] == 100.0

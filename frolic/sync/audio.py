@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy import signal
 
-from frolic3d.log import get_logger
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 

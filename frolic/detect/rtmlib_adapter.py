@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from frolic3d.config import DetectConfig
-from frolic3d.detect.adapter import DetectorOutput, empty_output
-from frolic3d.log import get_logger
+from frolic.config import DetectConfig
+from frolic.detect.adapter import DetectorOutput, empty_output
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 
@@ -30,7 +30,7 @@ POSE_MODELS: dict[str, tuple[str, tuple[int, int]]] = {
         (192, 256),
     ),
 }
-INSTALL_HINT = "install the detector extra: pip install 'frolic3d[detect]' (rtmlib + onnxruntime-gpu)"
+INSTALL_HINT = "install the detector extra: pip install 'frolic[detect]' (rtmlib + onnxruntime-gpu)"
 
 
 class RtmlibDetector:

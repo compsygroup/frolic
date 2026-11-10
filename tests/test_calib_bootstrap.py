@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from frolic3d.calib import bootstrap as BS
-from frolic3d.config import BootstrapConfig
-from frolic3d.geometry import rotation_angle_deg, umeyama
-from frolic3d.synthetic import person_track, project_people, ring_cameras
+from frolic.calib import bootstrap as BS
+from frolic.config import BootstrapConfig
+from frolic.geometry import rotation_angle_deg, umeyama
+from frolic.synthetic import person_track, project_people, ring_cameras
 
 
 @pytest.fixture(scope="module")

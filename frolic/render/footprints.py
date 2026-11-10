@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from frolic3d.skeleton import J
+from frolic.skeleton import J
 
 
 @dataclass

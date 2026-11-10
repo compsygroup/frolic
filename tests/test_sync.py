@@ -7,11 +7,11 @@ import pytest
 import yaml
 from scipy.io import wavfile
 
-from frolic3d.config import FrolicConfig, load_config
-from frolic3d.io.workdir import WorkDir
-from frolic3d.sync import audio as A
-from frolic3d.sync.stage import common_window, run
-from frolic3d.synthetic import make_scene
+from frolic.config import FrolicConfig, load_config
+from frolic.io.workdir import WorkDir
+from frolic.sync import audio as A
+from frolic.sync.stage import common_window, run
+from frolic.synthetic import make_scene
 
 SR = 8000
 
@@ -75,7 +75,7 @@ def test_gcc_phat_subsample():
 
 
 def test_common_window():
-    from frolic3d.io.video import VideoInfo
+    from frolic.io.video import VideoInfo
 
     infos = {k: VideoInfo(Path(k), 1, 1, 30.0, 300, 10.0, False) for k in "ab"}
     t0, t1 = common_window(infos, {"a": 0.0, "b": 2.0}, 0.0, 0.0)
@@ -199,6 +199,6 @@ def test_stage_audio(scene, tmp_path):
 
 
 def test_config_template_roundtrip():
-    from frolic3d.config import template
+    from frolic.config import template
 
     FrolicConfig.model_validate(yaml.safe_load(template()))

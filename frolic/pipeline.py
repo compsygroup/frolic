@@ -11,23 +11,23 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.workdir import STAGES, WorkDir
-from frolic3d.log import get_logger
+from frolic.config import FrolicConfig
+from frolic.io.workdir import STAGES, WorkDir
+from frolic.log import get_logger
 
 log = get_logger("pipeline")
 
 STAGE_MODULES: dict[str, str] = {
-    "sync": "frolic3d.sync.stage",
-    "calibrate": "frolic3d.calib.stage",
-    "detect": "frolic3d.detect.stage",
-    "track": "frolic3d.track.stage",
-    "select": "frolic3d.select.stage",
-    "singleview": "frolic3d.singleview.stage",
-    "sam3d": "frolic3d.sam3d.stage",
-    "fit": "frolic3d.fit.stage",
-    "export": "frolic3d.export.stage",
-    "render": "frolic3d.render.stage",
+    "sync": "frolic.sync.stage",
+    "calibrate": "frolic.calib.stage",
+    "detect": "frolic.detect.stage",
+    "track": "frolic.track.stage",
+    "select": "frolic.select.stage",
+    "singleview": "frolic.singleview.stage",
+    "sam3d": "frolic.sam3d.stage",
+    "fit": "frolic.fit.stage",
+    "export": "frolic.export.stage",
+    "render": "frolic.render.stage",
 }
 GPU_STAGES: set[str] = {"detect", "track", "sam3d", "fit", "render"}
 StageFn = Callable[[FrolicConfig, WorkDir], dict[str, Any]]
@@ -66,7 +66,7 @@ def run_stage(
         log.info("%s: running in %s", stage, py)
         env = dict(os.environ)
         env.setdefault("FROLIC_CHILD", "1")
-        cmd = [str(py), "-m", "frolic3d.cli", stage, "-c", str(config_path), "--force"]
+        cmd = [str(py), "-m", "frolic.cli", stage, "-c", str(config_path), "--force"]
         rc = subprocess.run(cmd, env=env).returncode
         if rc != 0:
             raise RuntimeError(f"stage {stage} failed in {py} (rc={rc})")

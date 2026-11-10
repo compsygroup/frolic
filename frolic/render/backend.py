@@ -5,12 +5,12 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from frolic3d.log import get_logger
+from frolic.log import get_logger
 
 log = get_logger(__name__)
 
 HINT = (
-    "install the render extra (pip install 'frolic3d[render]') and an EGL (GPU) or OSMesa (CPU) OpenGL; "
+    "install the render extra (pip install 'frolic[render]') and an EGL (GPU) or OSMesa (CPU) OpenGL; "
     "see README, Troubleshooting"
 )
 

@@ -9,17 +9,17 @@ from typing import Any
 
 import numpy as np
 
-from frolic3d.config import FrolicConfig
-from frolic3d.export.visibility import visible_mask
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.metrics.compute import compute_metrics, write_summary_csv
-from frolic3d.skeleton import JOINT_NAMES
+from frolic.config import FrolicConfig
+from frolic.export.visibility import visible_mask
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.metrics.compute import compute_metrics, write_summary_csv
+from frolic.skeleton import JOINT_NAMES
 
 log = get_logger(__name__)
 
-SCHEMA = "frolic3d.export/1"
+SCHEMA = "frolic.export/1"
 
 
 def fitted_people(fit_dir: Path) -> list[str]:

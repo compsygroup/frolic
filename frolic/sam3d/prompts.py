@@ -7,12 +7,12 @@ from pathlib import Path
 
 import numpy as np
 
-from frolic3d.geometry import Camera
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.detections import N_KP, Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26_HIP, N_JOINTS, J
+from frolic.geometry import Camera
+from frolic.io.calib import CameraSet
+from frolic.io.detections import N_KP, Detections
+from frolic.io.tracks import Tracks
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26_HIP, N_JOINTS, J
 
 log = get_logger(__name__)
 

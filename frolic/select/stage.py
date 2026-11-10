@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from itertools import pairwise
 from typing import Any
 
 import numpy as np
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.detections import load_all
-from frolic3d.io.tracks import Tracks
-from frolic3d.io.workdir import WorkDir
-from frolic3d.log import get_logger
-from frolic3d.select.filters import auto_select
-from frolic3d.select.picker import pick
-from frolic3d.select.sheet import contact_sheet
+from frolic.config import FrolicConfig
+from frolic.io.detections import load_all
+from frolic.io.tracks import Tracks
+from frolic.io.workdir import WorkDir
+from frolic.log import get_logger
+from frolic.select.filters import auto_select
+from frolic.select.picker import pick
+from frolic.select.sheet import contact_sheet, img_tags
 
 log = get_logger(__name__)
 
@@ -63,7 +64,7 @@ def apply_spans(tr: Tracks, cfg: FrolicConfig) -> dict[str, list[tuple[int, int]
     return out
 
 
-def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
+def run(cfg: FrolicConfig, work: WorkDir, on_ready: Callable[[str], None] | None = None) -> dict[str, Any]:
     videos = work.read_videos()
     tr = Tracks.load(work.tracks)
     with open(work.stage_dir("track") / "identities.json") as fh:
@@ -71,8 +72,9 @@ def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
     dets = load_all(work.stage_dir("detect"), tr.cameras)
     out_dir = work.stage_dir("select")
     sheet_jpg, sheet_html = out_dir / "sheet.jpg", out_dir / "sheet.html"
+    tiles: dict[str, list[np.ndarray]] = {}
     if tr.n_people:
-        contact_sheet(tr, dets, videos, people, sheet_jpg, sheet_html, cfg.select.sheet_tiles)
+        tiles = contact_sheet(tr, dets, videos, people, sheet_jpg, sheet_html, cfg.select.sheet_tiles)
     sc = cfg.select
     rejected: dict[str, list[str]] = {}
     if sc.mode == "config":
@@ -81,7 +83,8 @@ def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
         if missing:
             log.warning("select.ids not found in the tracks: %s", missing)
     elif sc.mode == "interactive":
-        ids, mode = pick(sc.picker, tr.ids, people, sheet_jpg, sc.selection_file)
+        ids, mode = pick(tr.ids, people, {k: img_tags(v) for k, v in tiles.items()}, sc, on_ready)
+        (out_dir / "picked.txt").write_text("\n".join(ids) + "\n")
     else:
         ids, rejected = auto_select(people, sc)
         mode = "auto"

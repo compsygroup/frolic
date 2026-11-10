@@ -9,15 +9,15 @@ from typing import Annotated
 
 import typer
 
-from frolic3d import __version__
-from frolic3d.config import FrolicConfig, load_config, template
-from frolic3d.io.workdir import STAGES, WorkDir
-from frolic3d.log import configure, get_logger
+from frolic import __version__
+from frolic.config import FrolicConfig, load_config, template
+from frolic.io.workdir import STAGES, WorkDir
+from frolic.log import configure, get_logger
 
 app = typer.Typer(
     add_completion=False,
     no_args_is_help=True,
-    help="FROLIC 3D: multi-view, multi-person, child-aware 3D human mesh pipeline.",
+    help="FROLIC: multi-view, multi-person, child-aware 3D human mesh pipeline.",
 )
 log = get_logger("cli")
 
@@ -53,7 +53,7 @@ def _stage_command(stage: str):
         threads: ThreadsOpt = None,
         log_level: LogOpt = "INFO",
     ) -> None:
-        from frolic3d.pipeline import run_stage
+        from frolic.pipeline import run_stage
 
         cfg, work = _setup(config, device, threads, log_level, stage)
         run_stage(cfg, work, stage, config_path=config.resolve(), force=force)
@@ -111,7 +111,7 @@ def run(
         if s is not None and s not in STAGES:
             raise typer.BadParameter(f"unknown stage {s!r}; stages: {', '.join(STAGES)}")
     if slurm:
-        from frolic3d.slurm import submit_pipeline
+        from frolic.slurm import submit_pipeline
 
         jobs = submit_pipeline(
             cfg, work, config.resolve(), start=from_stage, stop=to_stage, force=force, dry_run=dry_run
@@ -119,7 +119,7 @@ def run(
         for stage, job in jobs.items():
             typer.echo(f"{stage}: {job}")
         return
-    from frolic3d.pipeline import run_pipeline
+    from frolic.pipeline import run_pipeline
 
     ran = run_pipeline(cfg, work, config.resolve(), start=from_stage, stop=to_stage, force=force)
     typer.echo("ran: " + (", ".join(ran) if ran else "nothing (all done)"))

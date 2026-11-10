@@ -1,6 +1,6 @@
 # Biomechanical constraints: sources for every range and threshold
 
-Module: `frolic3d/fit/biomech.py` (`ADULT`, `CHILD`, `SOURCES`, `OMEGA_MAX_DPS`). Degrees unless stated. Sign
+Module: `frolic/fit/biomech.py` (`ADULT`, `CHILD`, `SOURCES`, `OMEGA_MAX_DPS`). Degrees unless stated. Sign
 convention: "rot" > 0 = internal rotation (ankle: inversion); "abd" > 0 = abduction (ankle: foot adduction, toe-in).
 Values marked **chosen** are not taken from a reference; they were set for this fit and should be read as such.
 

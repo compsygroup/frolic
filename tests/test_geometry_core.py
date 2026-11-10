@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from frolic3d.geometry import (
+from frolic.geometry import (
     Camera,
     box_iou,
     kabsch,
@@ -16,7 +16,7 @@ from frolic3d.geometry import (
     triangulate_batch,
     umeyama,
 )
-from frolic3d.synthetic import ring_cameras
+from frolic.synthetic import ring_cameras
 
 
 def test_project_undistort_roundtrip():

@@ -9,13 +9,13 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from frolic3d.config import TrackConfig
-from frolic3d.geometry import Camera, triangulate
-from frolic3d.io.calib import CameraSet
-from frolic3d.io.detections import Detections
-from frolic3d.io.tracks import Tracks
-from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26, HALPE26_HIP, HALPE26_NECK, HALPE26_SHOULDERS, N_JOINTS, J
+from frolic.config import TrackConfig
+from frolic.geometry import Camera, triangulate
+from frolic.io.calib import CameraSet
+from frolic.io.detections import Detections
+from frolic.io.tracks import Tracks
+from frolic.log import get_logger
+from frolic.skeleton import HALPE26, HALPE26_HIP, HALPE26_NECK, HALPE26_SHOULDERS, N_JOINTS, J
 
 log = get_logger(__name__)
 ANCHORS = (HALPE26_HIP, HALPE26_NECK)

@@ -12,7 +12,7 @@ from typing import Protocol
 import numpy as np
 import torch
 
-from frolic3d.skeleton import HALPE26_TO_MHR70, MHR70_BODY, N_JOINTS, J
+from frolic.skeleton import HALPE26_TO_MHR70, MHR70_BODY, N_JOINTS, J
 
 KEEP = [
     "bbox", "focal_length", "pred_keypoints_3d", "pred_keypoints_2d", "pred_cam_t", "pred_pose_raw", "global_rot", "body_pose_params",
@@ -222,7 +222,7 @@ def mock_faces() -> np.ndarray:
 
 def mock_template17() -> np.ndarray:
     """Canonical standing pose, pelvis at the origin, z up, stature 1 m."""
-    from frolic3d.synthetic import pose_at
+    from frolic.synthetic import pose_at
 
     X = pose_at(1.0, 0.0, (0.0, 0.0), 0.0)
     return (X - X[J["pelvis"]]).astype(np.float32)

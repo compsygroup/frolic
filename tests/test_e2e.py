@@ -9,11 +9,11 @@ import numpy as np
 import pytest
 from conftest import can_render
 
-from frolic3d.config import FrolicConfig
-from frolic3d.io.workdir import STAGES, WorkDir
-from frolic3d.pipeline import run_pipeline
-from frolic3d.skeleton import J
-from frolic3d.synthetic import make_scene
+from frolic.config import FrolicConfig
+from frolic.io.workdir import STAGES, WorkDir
+from frolic.pipeline import run_pipeline
+from frolic.skeleton import J
+from frolic.synthetic import make_scene
 
 
 @pytest.fixture(scope="module")
@@ -62,7 +62,7 @@ def test_export_outputs(run):
     assert len(meta["people"]) == 2
     gt = np.load(work.stage_dir("detect") / "mock_joints.npz")["xyz"]
     statures = []
-    assert meta["schema"] == "frolic3d.export/1"
+    assert meta["schema"] == "frolic.export/1"
     for person in meta["people"]:
         z = np.load(out / f"{person['id']}.npz")
         n = len(z["frame_times"])

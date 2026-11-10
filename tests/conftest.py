@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from frolic3d.synthetic import person_track, project_people, ring_cameras
+from frolic.synthetic import person_track, project_people, ring_cameras
 
 SCRATCH = Path(os.environ.get("FROLIC_TEST_SCRATCH", "")) if os.environ.get("FROLIC_TEST_SCRATCH") else None
 
@@ -49,7 +49,7 @@ def gt_detections(cams, two_people):
 
 @pytest.fixture
 def work(tmp_path):
-    from frolic3d.io.workdir import WorkDir
+    from frolic.io.workdir import WorkDir
 
     return WorkDir(tmp_path / "work")
 

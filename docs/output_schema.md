@@ -1,6 +1,6 @@
 # Output schema
 
-Everything FROLIC 3D writes is NumPy `.npz`/`.npy`, JSON or CSV; no pickles. World frame: metres, z up, floor at z = 0
+Everything FROLIC writes is NumPy `.npz`/`.npy`, JSON or CSV; no pickles. World frame: metres, z up, floor at z = 0
 after levelling. Time: the track grid (`track.fps`, default 15 Hz); `source_frames` maps every grid frame to the aligned
 source frame index (`frame + frame_offset[camera]` is the file frame of that camera, see `work/videos.json`).
 
@@ -33,20 +33,20 @@ when they lie between 3D frames at most 3 s apart. With `observed_rule: false` o
 ## `work/export/meta.json`
 
 ```json
-{"schema": "frolic3d.export/1", "fps": 15.0, "n_frames": 1350, "source_fps": 60.0,
+{"schema": "frolic.export/1", "fps": 15.0, "n_frames": 1350, "source_fps": 60.0,
  "people": [{"id": "p0", "label": "adult", "stature_m": 1.72, "frames_visible": 1340}],
  "body_model": "Anny (SMPL-X topology)", "joint_names": [...], "world": {"up": "z", "floor_z": 0.0, "units": "m"}}
 ```
 
 ## `work/export/cameras.json`
 
-Schema `frolic3d.cameras/1`: `cameras: [{name, width, height, K (3x3), dist (k1 k2 p1 p2 k3), R (3x3), t (3)}]` with
+Schema `frolic.cameras/1`: `cameras: [{name, width, height, K (3x3), dist (k1 k2 p1 p2 k3), R (3x3), t (3)}]` with
 `x_cam = R X + t` (OpenCV conventions, pixels of the distorted image, K of the undistorted image), `units`, `world`.
 This is the levelled calibration used by the fit, so meshes project into the raw videos with `cv2.projectPoints`.
 
 ## `work/export/metrics.json` and `summary.csv`
 
-`{"schema": "frolic3d.metrics/1", "fps", "per_person": {id: {...}}, "global": {...}}`. Per person:
+`{"schema": "frolic.metrics/1", "fps", "per_person": {id: {...}}, "global": {...}}`. Per person:
 
 | key | meaning |
 |---|---|

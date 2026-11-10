@@ -4,7 +4,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from frolic3d.config import FrolicConfig, load_config, save_config, template
+from frolic.config import FrolicConfig, load_config, save_config, template
 
 
 def test_defaults_validate():
