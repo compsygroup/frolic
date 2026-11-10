@@ -10,6 +10,7 @@ import numpy as np
 from frolic3d.config import RenderConfig
 from frolic3d.io.video import write_video
 from frolic3d.log import get_logger
+from frolic3d.render.footprints import footprint_mesh, footsteps
 from frolic3d.render.scene import (
     Scene,
     body_mesh,
@@ -42,7 +43,7 @@ class RoomView:
         self.asp = self.W / self.H
         mc = scene.cams.centers.mean(0)[:2] - self.target[:2]
         self.az0 = np.degrees(np.arctan2(mc[1], mc[0])) - cfg.pan_deg / 2
-        self.dist = self._fit_distance()
+        self.dist = self._fit_distance() / max(cfg.room_zoom, 1e-3)
         self.renderer = pyrender.OffscreenRenderer(self.W * self.ss, self.H * self.ss)
         self.camera = pyrender.PerspectiveCamera(yfov=self.yfov, aspectRatio=self.asp, znear=0.05, zfar=200)
         depth = 0.25 if self.dist < 8 else 0.45
@@ -130,11 +131,20 @@ def render_room(scene: Scene, cfg: RenderConfig, out_path: Path) -> Path:
     view = RoomView(scene, cfg)
     i0, i1 = render_window(scene, cfg)
     ts = output_times(i0, i1, scene.fps, cfg.fps)
+    steps = {p.pid: footsteps(p.joints, scene.fps) for p in scene.people} if cfg.footprints_s > 0 else {}
+    for pid, st in steps.items():
+        log.info("%s: %d footsteps", pid, len(st))
+    fade, hold = cfg.footprints_s * scene.fps, cfg.footprints_hold_s * scene.fps
     proc = write_video(out_path, (view.W, view.H), cfg.fps, cfg.crf)
     try:
         for k, t in enumerate(ts):
             u = k / max(1, len(ts) - 1)
-            proc.stdin.write(np.ascontiguousarray(view.render(float(t), u)).tobytes())
+            extra = [
+                footprint_mesh(steps[p.pid], float(t), fade, p.colour, hold_frames=hold)
+                for p in scene.people
+                if p.pid in steps
+            ]
+            proc.stdin.write(np.ascontiguousarray(view.render(float(t), u, [m for m in extra if m is not None])).tobytes())
             if k % 200 == 0:
                 log.info("%s: %d/%d", out_path.name, k, len(ts))
     finally:

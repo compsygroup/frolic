@@ -77,7 +77,14 @@ class CalibConfig(Strict):
     reference_height_m: float | None = Field(
         None, description="bootstrap: stature (m) of the person chosen by calib.bootstrap.person, for metric scale"
     )
-    level_floor: bool = True
+    level_floor: bool = Field(
+        True, description="rotate the world onto the standing-feet plane; a given calibration that level_floor levelled on another clip is only z-shifted"
+    )
+    level_min_spread_m: float = Field(
+        0.25,
+        description="smallest horizontal std (m) the floor points need across their narrowest direction; "
+        "below it the plane tilt is unconstrained (feet on a walkway line) and the orientation is kept",
+    )
     ankle_height_m: float = Field(0.07, description="ankle joint height above the floor when standing")
 
 
@@ -99,6 +106,11 @@ class DetectConfig(Strict):
         0.6, description="suppress cells occupied in > this fraction of frames (posters, mirrors)"
     )
     static_spread: float = Field(0.01, description="... whose keypoints barely move (std / box height)")
+    noisy_occupancy: float = Field(
+        0.45, description="also suppress cells occupied in > this fraction of frames by weak detections (0 = off)"
+    )
+    noisy_kp: float = Field(0.55, description="... mean keypoint score below this ...")
+    noisy_box: float = Field(0.60, description="... and median box score below this")
 
 
 class TrackConfig(Strict):
@@ -122,6 +134,11 @@ class TrackConfig(Strict):
     min_identity_frac: float = Field(0.03, description="identities carrying fewer frames than this are dropped")
     bridge_s: float = Field(3.0, description="gaps up to this long are interpolated inside an identity")
     max_speed_mps: float = 1.2
+    teleport_mps: float = Field(
+        3.5,
+        description="identity: a short run entered and left faster than this (m/s) is another person's cluster and is "
+        "dropped; keep above a running child's speed (2-3 m/s), max_speed_mps only widens the association gate",
+    )
     max_pelvis_z_m: float = Field(1.15, description="identities floating above this are mirror ghosts")
     merge: list[list[str]] = Field(default_factory=list, description="identity ids to force-merge, e.g. [['p1', 'p3']]")
     split: dict[str, list[float]] = Field(default_factory=dict, description="identity -> times (s) at which to split")
@@ -182,6 +199,7 @@ class Sam3dConfig(Strict):
     iters: int = 600
     w_prior: float = 2.0
     w_anchor: float = 0.5
+    gap_vmax: float = Field(1.5, description="m/s: anchor tolerance growth for frames without a tracked mid-hip")
     w_acc: float = 20.0
     w_floor: float = 200.0
     sigma: float = 0.04
@@ -232,11 +250,17 @@ class FitConfig(Strict):
     w_dense: float = 0.5
     dense_max_d: float = 0.06
     dense_build: bool = True
+    w_build_prior: float = Field(
+        0.0,
+        description="pull of the weight and muscle sliders (logit) toward the population middle when no mass is given; "
+        "0 = off. Without it weight absorbs joint-spacing mismatches (adults 0.97, 3 y 0.96, 2026-11-09)",
+    )
     segments: bool = True
     w_segment: float = 0.002
     w_length: float = 5.0
     segment_gate: float = 0.10
     ankle_bias: bool = True
+    ankle_bias_max: float = Field(0.06, description="cap (m) on the shin-target ankle bias")
     w_smooth: float = 2.0
     smooth_v0: float = 0.4
     smooth_floor: float = 0.25
@@ -266,12 +290,21 @@ class RenderConfig(Strict):
     fps: int = 30
     crf: int = 18
     tile_width: int = 960
+    grid_cols: int = Field(0, description="grid: cameras per row (0 = near-square tiling)")
+    grid_tile_width: int = Field(0, description="grid: tile width in px (0 = tile_width)")
     room_width: int = 1920
     room_height: int = 1080
     alpha: float = 0.6
     pan_deg: float = 24.0
+    room_zoom: float = Field(1.0, description="room/trajectories: camera distance divided by this (> 1 = closer)")
     elevation_deg: float = 22.0
     trail_s: float = 3.0
+    footprints_s: float = Field(
+        0.0, description="room: mark the floor where each foot lands and fade the mark out over this many seconds (0 = off)"
+    )
+    footprints_hold_s: float = Field(
+        0.0, description="room: keep each footprint at full opacity for this long before it starts fading"
+    )
     supersample: int = 1
     colours: dict[str, list[int]] = Field(default_factory=dict, description="person id -> RGB")
     start_s: float = 0.0

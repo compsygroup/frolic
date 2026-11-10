@@ -15,7 +15,7 @@ from frolic3d.io.calib import CameraSet
 from frolic3d.io.detections import Detections
 from frolic3d.io.tracks import Tracks
 from frolic3d.log import get_logger
-from frolic3d.skeleton import HALPE26, HALPE26_HIP, HALPE26_NECK, N_JOINTS, J
+from frolic3d.skeleton import HALPE26, HALPE26_HIP, HALPE26_NECK, HALPE26_SHOULDERS, N_JOINTS, J
 
 log = get_logger(__name__)
 ANCHORS = (HALPE26_HIP, HALPE26_NECK)
@@ -63,19 +63,25 @@ def candidates_at(
 
 
 def estimate_people(frames: list[int], dets: dict[str, Detections], cap: int = 8) -> int:
-    per_frame = []
+    """75th percentile over frames of the max concurrent confident detections in one camera; counted on pelvis+neck
+    and on neck+both shoulders (a seated person behind a desk never shows the pelvis), the larger wins."""
+    per_frame, per_frame_sh = [], []
     for f in frames:
-        best = 0
+        best = best_sh = 0
         for d in dets.values():
             rows = d.at(f)
-            n = (
-                int(((d.kps_score[rows, HALPE26_HIP] > 0.5) & (d.kps_score[rows, HALPE26_NECK] > 0.5)).sum())
-                if len(rows)
-                else 0
-            )
-            best = max(best, n)
+            if not len(rows):
+                continue
+            ks = d.kps_score[rows]
+            best = max(best, int(((ks[:, HALPE26_HIP] > 0.5) & (ks[:, HALPE26_NECK] > 0.5)).sum()))
+            best_sh = max(best_sh, int(((ks[:, HALPE26_NECK] > 0.5) & (ks[:, HALPE26_SHOULDERS] > 0.5).all(1)).sum()))
         per_frame.append(best)
-    return int(min(cap, max(1, round(np.percentile(per_frame, 75))))) if per_frame else 1
+        per_frame_sh.append(best_sh)
+    if not per_frame:
+        return 1
+    n_pel, n_sh = round(np.percentile(per_frame, 75)), round(np.percentile(per_frame_sh, 75))
+    log.info("people estimate: pelvis+neck %d, neck+shoulders %d", n_pel, n_sh)
+    return int(min(cap, max(1, n_pel, n_sh)))
 
 
 def reproj_err(cam: Camera, X: np.ndarray, uv: np.ndarray) -> float:
@@ -182,6 +188,8 @@ def assign(
     st: TrackState,
     cfg: TrackConfig,
     appearance: bool,
+    i: int = 0,
+    fps: float = 15.0,
 ) -> list[tuple[int, int]]:
     """Hungarian assignment of clusters to track slots -> [(cluster index, slot)]."""
     n = len(st.prev)
@@ -205,23 +213,67 @@ def assign(
                 cost[ci, t] = 3.5 + app
             else:
                 cost[ci, t] = 1.0 + 1.5 * app
-    out = []
-    for ci, t in zip(*linear_sum_assignment(cost)):
-        if st.prev[t] is not None and cost[ci, t] > cfg.max_jump_m + 1.0:
-            continue
+    def accept(ci: int, t: int) -> bool:
+        # jump gate grows with the time since the slot last saw its person (a slot keeps its last position for
+        # lost_frames; with a fixed gate a person who moved on while unseen was rejected every frame until the slot
+        # was freed: DBP gait pilot T08, 3-7 s, 113 rejections, kids untracked)
+        if st.prev[t] is not None:
+            dt = max(0, i - st.last_seen[t]) / fps
+            if np.linalg.norm(clusters[ci][1][0] - st.prev[t]) > cfg.max_jump_m + 1.0 + cfg.max_speed_mps * dt:
+                return False
+        # appearance gates only while the slot is being tracked (continuity); a free slot takes any cluster and the
+        # identity stage decides who it was (hard gates on a free slot's stale memory left people untracked for whole
+        # takes: DBP gait pilot T08, 6-year-old 0 % of 4-12 s)
+        tracked = st.prev[t] is not None
         if (
             appearance
+            and tracked
             and st.colour[t] is not None
             and ccols[ci] is not None
             and _colour_dist(ccols[ci], st.colour[t]) > 1.4
         ):
-            continue
-        if appearance and st.size[t] is not None and abs(csize[ci] - st.size[t]) > 0.22:
-            continue
-        out.append((int(ci), int(t)))
-        if ccols[ci] is not None:
-            st.colour[t] = ccols[ci] if st.colour[t] is None else 0.98 * st.colour[t] + 0.02 * ccols[ci]
-        st.size[t] = csize[ci] if st.size[t] is None else 0.98 * st.size[t] + 0.02 * csize[ci]
+            return False
+        if appearance and tracked and st.size[t] is not None and abs(csize[ci] - st.size[t]) > 0.22:
+            return False
+        return True
+
+    # Hungarian assignment, re-run on the leftovers after every rejection: a cluster the optimal pairing sent to a
+    # tracked slot too far away (rejected) still gets a free slot instead of being dropped for the frame
+    out: list[tuple[int, int]] = []
+    banned: set[tuple[int, int]] = set()
+    free_c, free_t = list(range(len(clusters))), list(range(n))
+    while free_c and free_t:
+        sub = cost[np.ix_(free_c, free_t)].copy()
+        for ci, t in banned:
+            if ci in free_c and t in free_t:
+                sub[free_c.index(ci), free_t.index(t)] = 1e6
+        progress = False
+        for ri, cj in zip(*linear_sum_assignment(sub)):
+            ci, t = free_c[ri], free_t[cj]
+            if sub[ri, cj] >= 1e6:
+                continue
+            if not accept(ci, t):
+                # last resort: the slot has not seen its person for >= 1 s and no other slot is left for this
+                # (well-triangulated) cluster -> the slot gives way and restarts on it; cut_segments splits the
+                # slot there (position jump) and the identity stage links the pieces by ReID
+                stale = st.prev[t] is None or (i - st.last_seen[t]) >= fps
+                if stale and len(free_t) == 1 and (ci, t) not in banned:
+                    st.prev[t] = None
+                    st.colour[t] = None
+                    st.size[t] = None
+                else:
+                    banned.add((ci, t))
+                    progress = True
+                    continue
+            out.append((int(ci), int(t)))
+            if ccols[ci] is not None:
+                st.colour[t] = ccols[ci] if st.colour[t] is None else 0.98 * st.colour[t] + 0.02 * ccols[ci]
+            st.size[t] = csize[ci] if st.size[t] is None else 0.98 * st.size[t] + 0.02 * csize[ci]
+            progress = True
+        free_c = [ci for ci in free_c if ci not in {c for c, _ in out}]
+        free_t = [t for t in free_t if t not in {t_ for _, t_ in out}]
+        if not progress or all((ci, t) in banned for ci in free_c for t in free_t):
+            break
     return out
 
 
@@ -242,12 +294,17 @@ def associate(
     for i, f in enumerate(frames):
         for t in range(n_people):
             if st.prev[t] is not None and i - st.last_seen[t] > lost_frames:
+                # the slot lost its person: forget position AND appearance memory; a slot whose colour/size came from a
+                # swap otherwise rejects the real person at the gates below for the rest of the take (the identity
+                # stage re-links segments by ReID, so short-term memory is all a slot needs)
                 st.prev[t] = None
+                st.colour[t] = None
+                st.size[t] = None
         C = candidates_at(f, dets, cams, stats, cfg.min_score)
         clusters = cluster_frame(C, cams, n_people, cfg.min_views, cfg.reproj_px)
         if not clusters:
             continue
-        for ci, t in assign(clusters, C, st, cfg, cfg.appearance):
+        for ci, t in assign(clusters, C, st, cfg, cfg.appearance, i, fps):
             mem = clusters[ci][0]
             xyz, sc = triangulate_cluster(mem, C, cams, cfg.min_score, cfg.reproj_px)
             if sc[J["pelvis"]] == 0:

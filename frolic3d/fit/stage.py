@@ -53,6 +53,11 @@ def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
     mhr_dir = work.stage_dir("sam3d") / "mhr"
     cuts = [int(c) for c in tracks.meta.get("cuts", [])]
     info: dict[str, Any] = {"people": {}}
+    for stale in out_dir.glob("*.npz"):  # fits of an earlier selection would otherwise be exported with these tracks
+        if stale.stem not in tracks.ids:
+            log.info("fit: removing %s from an earlier selection", stale.name)
+            stale.unlink()
+            (out_dir / f"{stale.stem}_verts.npy").unlink(missing_ok=True)
     for k, pid in enumerate(tracks.ids):
         sam_kp, sam_verts = load_sam_inputs(mhr_dir, pid, tracks.n_frames) if cfg.sam3d.enabled else (None, None)
         inp = FitInputs(

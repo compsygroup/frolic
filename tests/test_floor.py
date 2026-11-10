@@ -38,7 +38,7 @@ def test_level_floor_recovers_tilt():
     tcams = cams.transformed(R, t)
     X = tilted.xyz[0, 10, J["head"]]
     uv_before, _ = tcams[0].project(X)
-    lev, lcams, info = level_floor(tilted, tcams, ankle_height_m=0.07)
+    lev, lcams, info = level_floor(tilted, tcams, ankle_height_m=0.07, min_spread_m=0.0)  # 1 m synthetic scene
     assert info["source"] == "standing" and abs(info["tilt_deg"] - 3.0) < 0.3
     ank = lev.xyz[:, :, [J["ankle_l"], J["ankle_r"]], 2]
     assert abs(np.median(ank) - 0.07) < 0.03
@@ -56,7 +56,7 @@ def test_level_floor_stance_fallback():
         X[30:, J["ankle_r"]] += [0.3, 0.0, 0.3]
     R = rodrigues([0, np.radians(2.0), 0])
     tr = apply_rigid(_tracks(people), R, np.zeros(3))
-    _lev, _, info = level_floor(tr, ring_cameras(2), 0.07)
+    _lev, _, info = level_floor(tr, ring_cameras(2), 0.07, min_spread_m=0.0)
     assert info["source"] == "stance_ankles"
     assert abs(info["tilt_deg"] - 2.0) < 0.3
 
@@ -80,3 +80,38 @@ def test_floor_align_shift():
     uv1, _ = cams[0].project(X)
     uv2, _ = ocams[0].project(X + [0, 0, info["z_shift_m"]])
     assert np.allclose(uv1, uv2, atol=1e-6)
+
+
+def test_level_floor_collinear_feet_keeps_orientation():
+    """Standing feet along one line (a walkway) do not constrain the tilt across the line: no rotation."""
+    a = person_track(60, 15.0, 1.72, (-0.5, 0.0), (0.5, 0.0), heading=0.0, gait_hz=0.0)
+    b = person_track(60, 15.0, 1.68, (0.5, 0.0), (-0.5, 0.0), heading=np.pi, gait_hz=0.0)
+    R = rodrigues([np.radians(3.0), 0, 0])
+    tr = apply_rigid(_tracks([a, b]), R, np.zeros(3))
+    _lev, cams, info = level_floor(tr, ring_cameras(2), 0.07, min_spread_m=0.25)
+    assert info["source"] == "none" and np.allclose(info["R"], np.eye(3)) and not cams.floor["levelled"]
+    _lev, _cams, info = level_floor(tr, ring_cameras(2), 0.07, min_spread_m=0.0)  # ungated: the tilt is wrong
+    assert info["source"] == "standing" and abs(info["tilt_deg"] - 3.0) > 1.0
+
+
+def test_level_floor_given_levelled_is_shift_only():
+    people = _standing_scene()
+    R = rodrigues([np.radians(3.0), 0, 0])
+    tr = apply_rigid(_tracks(people), R, np.array([0.0, 0.0, 0.4]))
+    cams = ring_cameras(2)
+    cams.floor.update({"levelled": True, "tilt_deg": 2.3})  # written by level_floor on another clip of the set
+    lev, lcams, info = level_floor(tr, cams, 0.07)
+    assert info["source"] == "given" and np.allclose(info["R"], np.eye(3)) and lcams.floor["levelled"]
+    assert abs(info["z_shift_m"]) > 0.1
+
+
+def test_given_levelled_puts_standing_ankles_at_ankle_height():
+    """Given levelled calibration: the z shift brings standing ankles to ankle_height_m, not the toe-biased p10 rule."""
+    people = _standing_scene()
+    tr = apply_rigid(_tracks(people), np.eye(3), np.array([0.0, 0.0, 0.09]))  # scene 9 cm too high
+    cams = ring_cameras(2)
+    cams.floor.update({"levelled": True, "tilt_deg": 2.3})
+    lev, _c, info = level_floor(tr, cams, 0.07)
+    F = standing_feet(lev)
+    assert info["height_source"] == "standing"
+    assert abs(np.median(F[:, 2]) - 0.07) < 0.01

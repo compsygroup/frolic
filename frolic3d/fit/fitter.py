@@ -268,6 +268,7 @@ class PersonFitter:
         pl[self.labels.index("age")] = logit(age0)
         fixed.apply(pl, self.labels)
         free_mask = fixed.mask(self.labels, dev)
+        build_idx = [self.labels.index(k) for k in ("weight", "muscle") if k in self.labels and k not in fixed.values]
         segv = torch.zeros(len(self.seg_labels), device=dev)
         rr, tr = self._root_init(X, pl, segv)
 
@@ -348,6 +349,8 @@ class PersonFitter:
                     + 10 * self._acc(roottr, ws_t, cuts)
                 )
                 loss = data + cfg.w_smooth * smooth + 1e-3 * rv.pow(2).mean() + 1e-3 * pl.pow(2).mean()
+                if cfg.w_build_prior > 0 and build_idx:
+                    loss = loss + cfg.w_build_prior * pl[build_idx].pow(2).sum()
                 if self.seg_labels:
                     loss = loss + cfg.w_segment * torch.tanh(segv).pow(2).sum() + cfg.w_length * len_loss(o)
                 if bm is not None:
@@ -405,7 +408,7 @@ class PersonFitter:
                 H_, _, RV_ = self.body.rest(torch.sigmoid(pl), self._seg(segv))
                 idx = self.body.idx
                 anny_ank = float(0.5 * (H_[idx["foot.L"], 2] + H_[idx["foot.R"], 2]) - RV_[:, 2].min())
-                bias = max(0.0, ank_h - anny_ank)
+                bias = min(max(0.0, ank_h - anny_ank), cfg.ankle_bias_max)
                 if bias > 0:
                     for ka, kk in ((J["ankle_l"], J["knee_l"]), (J["ankle_r"], J["knee_r"])):
                         d_ = Xt[:, ka] - Xt[:, kk]
@@ -560,6 +563,9 @@ class PersonFitter:
                     + cfg.w_dense * (Wd * hub(torch.linalg.norm(o.dense - Sd, dim=-1))).sum() / Wd.sum().clamp_min(1)
                     + 1e-2 * (pl - pl0).pow(2).sum()
                 )
+            if build and cfg.w_build_prior > 0:
+                bi = [self.labels.index(k) for k in ("weight", "muscle")]
+                loss = loss + cfg.w_build_prior * pl[bi].pow(2).sum()
             if not torch.isfinite(loss):
                 opt.zero_grad()
                 continue

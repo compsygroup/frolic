@@ -398,7 +398,7 @@ def assemble_identities(
         if len(pz) and np.median(pz) > cfg.max_pelvis_z_m:
             log.info("identity dropped as a floating ghost (median pelvis z %.2f m)", float(np.median(pz)))
             continue
-        tp = _teleport_filter(xyz, sc, sup, tr.fps, cfg.max_speed_mps)
+        tp = _teleport_filter(xyz, sc, sup, tr.fps, cfg.teleport_mps)
         br = bridge_gaps(xyz, sc, int(cfg.bridge_s * tr.fps))
         people.append((xyz, sc, sup))
         summary.append({"ghost_frames": ghost, "teleport_frames": tp, "bridged_frames": br})

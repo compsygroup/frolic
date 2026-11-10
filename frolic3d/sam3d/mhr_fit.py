@@ -220,6 +220,18 @@ class MhrFitter:
             g = np.isfinite(tgt_np[:, d])
             tgt_np[:, d] = np.interp(np.arange(N), np.flatnonzero(g), tgt_np[g, d]) if g.any() else 0.0
         tgt = torch.tensor(tgt_np, dtype=torch.float32, device=dev)
+        # gap anchor: frames without a tracked mid-hip are held to the interpolated track with a Huber tolerance growing
+        # cfg.gap_vmax m/s from the nearest tracked frame and a weight decaying over 3 s (else only the acceleration term
+        # holds them and the body drifts inside every track gap)
+        gap = ~np.isfinite(hipw[:, 0])
+        dt_gap = np.zeros(N)
+        if gap.any() and (~gap).any():
+            ti, gi = np.flatnonzero(~gap), np.flatnonzero(gap)
+            dt_gap[gi] = np.abs(gi[:, None] - ti[None]).min(1) / self.fps
+            log.info("%s: %d frames without a tracked mid-hip anchored to the interpolated track (max gap %.1f s)",
+                     pid, int(gap.sum()), dt_gap.max())
+        gapw = torch.tensor(np.where(gap, np.exp(-dt_gap / 3.0), 0.0), dtype=torch.float32, device=dev)
+        gapd = torch.tensor(0.05 + cfg.gap_vmax * dt_gap, dtype=torch.float32, device=dev)
         shape = torch.tensor(shape0, device=dev)[None].requires_grad_(True)
         scale = torch.tensor(scale0, device=dev)[None].requires_grad_(True)
         nbody = min(nb, 130)
@@ -276,6 +288,8 @@ class MhrFitter:
                 * a3w
                 * torch.nn.functional.huber_loss(d3, torch.zeros_like(d3), delta=0.05, reduction="none")
             ).mean()
+            dg = (kp[:, list(MHR70_HIPS)].mean(1) - tgt).norm(dim=-1)
+            Lan = Lan + (gapw * torch.where(dg < gapd, 0.5 * dg**2, gapd * (dg - 0.5 * gapd))).sum() / N
             Lacc = (
                 (acc_mask[:, None, None] * (kp[2:] - 2 * kp[1:-1] + kp[:-2]) ** 2).sum(-1).mean()
                 if N > 2

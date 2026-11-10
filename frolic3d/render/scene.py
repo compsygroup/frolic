@@ -28,6 +28,11 @@ class Person:
     faces: np.ndarray
     joints: np.ndarray
     colour: tuple[int, int, int]
+    stature_m: float | None = None  # fitted standing height, shown in the legend
+
+    @property
+    def legend(self) -> str:
+        return f"{self.label}  {self.stature_m:.2f} m" if self.stature_m else self.label
 
     def visible(self, i: int) -> bool:
         return 0 <= i < len(self.vertices) and bool(np.isfinite(self.vertices[i, 0, 0]))
@@ -82,6 +87,7 @@ def load_scene(export_dir: Path, videos_json: Path | None, colours: dict[str, li
                 np.asarray(z["faces"]),
                 np.asarray(z["joints"], np.float32),
                 col,
+                float(info["stature_m"]) if info.get("stature_m") else None,
             )
         )
         if src is None:
@@ -255,7 +261,7 @@ def draw_legend(img_bgr: np.ndarray, people: list[Person], size: int = 18, x: in
     for k, p in enumerate(people):
         yy = y + k * int(size * 1.6)
         cv2.rectangle(out, (x, yy + 2), (x + size - 2, yy + size - 2), tuple(int(c) for c in p.colour[::-1]), -1)
-        items.append((x + size + 6, yy - 2, p.label, size, (245, 245, 245)))
+        items.append((x + size + 6, yy - 2, p.legend, size, (245, 245, 245)))
     return draw_text(out, items)
 
 

@@ -76,7 +76,8 @@ Camera calibration mode and floor levelling.
 | `calib.bootstrap.refine_intrinsics` | `bool` | `True` |  |
 | `calib.bootstrap.person` | `'most_seen' or 'tallest' or 'shortest'` | `most_seen` | which bootstrap person (grouped by clothing colour) has calib.reference_height_m |
 | `calib.reference_height_m` | `float or None` | `None` | bootstrap: stature (m) of the person chosen by calib.bootstrap.person, for metric scale |
-| `calib.level_floor` | `bool` | `True` |  |
+| `calib.level_floor` | `bool` | `True` | rotate the world onto the standing-feet plane; a given calibration that level_floor levelled on another clip is only z-shifted |
+| `calib.level_min_spread_m` | `float` | `0.25` | smallest horizontal std (m) the floor points need across their narrowest direction; below it the plane tilt is unconstrained (feet on a walkway line) and the orientation is kept |
 | `calib.ankle_height_m` | `float` | `0.07` | ankle joint height above the floor when standing |
 
 ## `detect`
@@ -97,6 +98,9 @@ Camera calibration mode and floor levelling.
 | `detect.mask_overlap` | `float` | `0.6` | box fraction inside a mask that drops the detection |
 | `detect.static_occupancy` | `float` | `0.6` | suppress cells occupied in > this fraction of frames (posters, mirrors) |
 | `detect.static_spread` | `float` | `0.01` | ... whose keypoints barely move (std / box height) |
+| `detect.noisy_occupancy` | `float` | `0.45` | also suppress cells occupied in > this fraction of frames by weak detections (0 = off) |
+| `detect.noisy_kp` | `float` | `0.55` | ... mean keypoint score below this ... |
+| `detect.noisy_box` | `float` | `0.6` | ... and median box score below this |
 
 ## `track`
 
@@ -122,6 +126,7 @@ Cross-view association, identities, refinement.
 | `track.min_identity_frac` | `float` | `0.03` | identities carrying fewer frames than this are dropped |
 | `track.bridge_s` | `float` | `3.0` | gaps up to this long are interpolated inside an identity |
 | `track.max_speed_mps` | `float` | `1.2` |  |
+| `track.teleport_mps` | `float` | `3.5` | identity: a short run entered and left faster than this (m/s) is another person's cluster and is dropped; keep above a running child's speed (2-3 m/s), max_speed_mps only widens the association gate |
 | `track.max_pelvis_z_m` | `float` | `1.15` | identities floating above this are mirror ghosts |
 | `track.merge` | `list[list[str]]` | `[]` | identity ids to force-merge, e.g. [['p1', 'p3']] |
 | `track.split` | `dict[str, list[float]]` | `{}` | identity -> times (s) at which to split |
@@ -194,6 +199,7 @@ SAM 3D Body per view and the multi-view MHR fit.
 | `sam3d.iters` | `int` | `600` |  |
 | `sam3d.w_prior` | `float` | `2.0` |  |
 | `sam3d.w_anchor` | `float` | `0.5` |  |
+| `sam3d.gap_vmax` | `float` | `1.5` | m/s: anchor tolerance growth for frames without a tracked mid-hip |
 | `sam3d.w_acc` | `float` | `20.0` |  |
 | `sam3d.w_floor` | `float` | `200.0` |  |
 | `sam3d.sigma` | `float` | `0.04` |  |
@@ -219,11 +225,13 @@ Anny body fit (shape, pose, biomechanics, root continuity, single-view weighting
 | `fit.w_dense` | `float` | `0.5` |  |
 | `fit.dense_max_d` | `float` | `0.06` |  |
 | `fit.dense_build` | `bool` | `True` |  |
+| `fit.w_build_prior` | `float` | `0.0` | pull of the weight and muscle sliders (logit) toward the population middle when no mass is given; 0 = off. Without it weight absorbs joint-spacing mismatches (adults 0.97, 3 y 0.96, 2026-11-09) |
 | `fit.segments` | `bool` | `True` |  |
 | `fit.w_segment` | `float` | `0.002` |  |
 | `fit.w_length` | `float` | `5.0` |  |
 | `fit.segment_gate` | `float` | `0.1` |  |
 | `fit.ankle_bias` | `bool` | `True` |  |
+| `fit.ankle_bias_max` | `float` | `0.06` | cap (m) on the shin-target ankle bias |
 | `fit.w_smooth` | `float` | `2.0` |  |
 | `fit.smooth_v0` | `float` | `0.4` |  |
 | `fit.smooth_floor` | `float` | `0.25` |  |
@@ -281,12 +289,17 @@ Video rendering.
 | `render.fps` | `int` | `30` |  |
 | `render.crf` | `int` | `18` |  |
 | `render.tile_width` | `int` | `960` |  |
+| `render.grid_cols` | `int` | `0` | grid: cameras per row (0 = near-square tiling) |
+| `render.grid_tile_width` | `int` | `0` | grid: tile width in px (0 = tile_width) |
 | `render.room_width` | `int` | `1920` |  |
 | `render.room_height` | `int` | `1080` |  |
 | `render.alpha` | `float` | `0.6` |  |
 | `render.pan_deg` | `float` | `24.0` |  |
+| `render.room_zoom` | `float` | `1.0` | room/trajectories: camera distance divided by this (> 1 = closer) |
 | `render.elevation_deg` | `float` | `22.0` |  |
 | `render.trail_s` | `float` | `3.0` |  |
+| `render.footprints_s` | `float` | `0.0` | room: mark the floor where each foot lands and fade the mark out over this many seconds (0 = off) |
+| `render.footprints_hold_s` | `float` | `0.0` | room: keep each footprint at full opacity for this long before it starts fading |
 | `render.supersample` | `int` | `1` |  |
 | `render.colours` | `dict[str, list[int]]` | `{}` | person id -> RGB |
 | `render.start_s` | `float` | `0.0` |  |

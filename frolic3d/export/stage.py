@@ -23,6 +23,13 @@ SCHEMA = "frolic3d.export/1"
 
 
 def fitted_people(fit_dir: Path) -> list[str]:
+    """Ids fitted by the last fit run (fit.json), so files of an earlier selection are not exported."""
+    rep = fit_dir / "fit.json"
+    if rep.exists():
+        with open(rep) as fh:
+            ids = list(json.load(fh).get("people", {}))
+        if ids:
+            return sorted(i for i in ids if (fit_dir / f"{i}.npz").exists())
     return sorted(p.stem for p in fit_dir.glob("*.npz") if not p.stem.endswith("_joints_full"))
 
 
@@ -71,11 +78,11 @@ def export_person(
         vertices = vertices.astype(dtype)
     else:
         vertices = np.full((n, 0, 3), np.nan, dtype)
-    frame0 = int(z["frame0"]) if "frame0" in z.files else 0
     stride = tracks.stride if tracks is not None else 1
-    track_frame0 = tracks.frame0 if tracks is not None else 0
-    source_frames = (track_frame0 + (frame0 + np.arange(n)) * stride).astype(np.int32)
-    frame_times = (frame0 + np.arange(n)) / fps
+    # fit frame0 = source (sync-window) frame of track frame 0, copied from the tracks; add it once
+    src0 = int(z["frame0"]) if "frame0" in z.files else (tracks.frame0 if tracks is not None else 0)
+    source_frames = (src0 + np.arange(n) * stride).astype(np.int32)
+    frame_times = source_frames / (src_fps or fps * stride)
     np.savez_compressed(
         out_dir / f"{pid}.npz",
         vertices=vertices,

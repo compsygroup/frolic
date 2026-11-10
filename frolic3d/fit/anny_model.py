@@ -229,7 +229,8 @@ class AnnyBody:
             from anny.shape_distribution import SimpleShapeDistribution
 
             self._age_map = SimpleShapeDistribution(self.m).morphological_age_mapping
-        return float(self._age_map.morphological_to_anny_age(torch.tensor([float(years)])))
+        a = self._age_map.morphological_age_anchors
+        return float(self._age_map.morphological_to_anny_age(torch.tensor([float(years)], dtype=a.dtype, device=a.device)))
 
 
 # ---------------------------------------------------------------------------------------------------- mock body

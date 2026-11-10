@@ -69,7 +69,14 @@ def detect_video(
 
 def postprocess(det: Detections, cfg: FrolicConfig) -> Detections:
     drop = masked_rows(det, cfg.detect.masks.get(det.camera, []), cfg.detect.mask_overlap)
-    drop |= static_rows(det, cfg.detect.static_occupancy, cfg.detect.static_spread)
+    drop |= static_rows(
+        det,
+        cfg.detect.static_occupancy,
+        cfg.detect.static_spread,
+        noisy_occupancy=cfg.detect.noisy_occupancy,
+        noisy_kp=cfg.detect.noisy_kp,
+        noisy_box=cfg.detect.noisy_box,
+    )
     if drop.any():
         log.info("%s: dropped %d masked/static detections", det.camera, int(drop.sum()))
     return det.subset(np.flatnonzero(~drop))

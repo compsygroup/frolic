@@ -28,6 +28,7 @@ N_JOINTS = len(JOINT_NAMES)
 HALPE26: list[int] = [19, 11, 12, 13, 14, 15, 16, 20, 23, 18, 17, 5, 6, 7, 8, 9, 10]
 HALPE26_TORSO: list[int] = [5, 6, 11, 12, 18, 19]
 HALPE26_HIP, HALPE26_NECK = 19, 18
+HALPE26_SHOULDERS: list[int] = [5, 6]
 
 # Right/left mirror of each joint (for left-right swap tests).
 MIRROR: list[int] = [0, 2, 1, 4, 3, 6, 5, 8, 7, 9, 10, 12, 11, 14, 13, 16, 15]

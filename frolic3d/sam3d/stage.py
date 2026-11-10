@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import shutil
+import time
 from pathlib import Path
 from typing import Any
 
@@ -93,14 +96,40 @@ def refine_single_view(
     return out
 
 
+def _check_cache(out: Path, work: WorkDir, tracks: Tracks, cfg: FrolicConfig) -> None:
+    """prompts.npz, views/ and mhr/ are indexed by person and built from the input tracks and cameras: when those
+    changed since the cache was written (other people selected, tracks rescaled), move the cache aside."""
+    h = hashlib.sha1()
+    # the select output, not the singleview tracks (refine_single_view below rewrites those)
+    src = work.tracks_selected if work.tracks_selected.exists() else work.fit_input_tracks
+    with np.load(src, allow_pickle=True) as z:  # array contents: the npz zip headers carry write times
+        for k in sorted(z.files):
+            h.update(k.encode())
+            h.update(np.ascontiguousarray(z[k]).tobytes())
+    h.update(Path(work.cameras_level if work.cameras_level.exists() else work.cameras).read_bytes())
+    key = {"ids": list(tracks.ids), "inputs_sha1": h.hexdigest(), "gate_px": cfg.sam3d.gate_px}
+    kp = out / "cache_key.json"
+    old = json.loads(kp.read_text()) if kp.exists() else None
+    stale = [n for n in ("prompts.npz", "views", "mhr") if (out / n).exists()]
+    if old != key and stale:
+        dst = out / f"stale_{time.strftime('%Y%m%d_%H%M%S')}"
+        dst.mkdir()
+        for n in stale:
+            shutil.move(str(out / n), str(dst / n))
+        log.info("sam3d: inputs changed since the cache was written (ids %s -> %s): moved %s to %s",
+                 old and old["ids"], key["ids"], stale, dst.name)
+    kp.write_text(json.dumps(key))
+
+
 def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
     if not cfg.sam3d.enabled:
         log.info("sam3d disabled in the configuration")
         return {"skipped": True}
     out = work.stage_dir("sam3d")
+    tracks = Tracks.load(work.fit_input_tracks)
+    _check_cache(out, work, tracks, cfg)
     mhr_dir = out / "mhr"
     mhr_dir.mkdir(exist_ok=True)
-    tracks = Tracks.load(work.fit_input_tracks)
     if cfg.sam3d.backend == "mock":
         return {"backend": "mock", "people": mock_outputs(tracks, mhr_dir)}
     cams = _cameras(work)

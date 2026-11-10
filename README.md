@@ -28,7 +28,7 @@ synced videos
 ```
 
 Any number of cameras (>= 2), any number of people, any frame rate and resolution. People get stable ids
-(`p0`, `p1`, ...); no roles are baked in. Optional labels and attributes (age, height, sex, weight) per person fix the
+(`p0`, `p1`, ...); Optional labels and attributes (age, height, sex, weight) per person fix the
 body phenotype when known.
 
 ## Install

@@ -46,7 +46,7 @@ def _floor(cfg: FrolicConfig, tr: Tracks, cams, step: str):
     fn = floor.level_floor if step == "level" else floor.floor_align
     try:
         if step == "level":
-            return fn(tr, cams, cfg.calib.ankle_height_m)
+            return fn(tr, cams, cfg.calib.ankle_height_m, cfg.calib.level_min_spread_m)
         return fn(tr, cams, cfg.calib.ankle_height_m)
     except Exception as e:
         log.warning("%s failed (%s): kept the unlevelled frame", step, e)
@@ -59,8 +59,8 @@ def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
     cams = cams.subset([c for c in videos["cameras"] if c in cams.names])
     dets = load_all(work.stage_dir("detect"), cams.names)
     n_frames = int(videos["n_frames"])
-    start = round(cfg.input.start_s * videos["fps"])
-    raw = associate(dets, cams, cfg.track, float(videos["fps"]), n_frames, frame0=start)
+    # frame indices are already relative to the sync window (sync applies input.start_s by trimming or frame_offset)
+    raw = associate(dets, cams, cfg.track, float(videos["fps"]), n_frames, frame0=0)
     raw.save(work.tracks_raw)
     E = _embeddings(cfg, raw, dets, videos)
     tr, info = assemble_identities(raw, dets, cfg.track, E)
@@ -71,7 +71,8 @@ def run(cfg: FrolicConfig, work: WorkDir) -> dict[str, Any]:
         tr = refine_tracks(tr, dets, cams, cfg.track)
     if cfg.calib.level_floor and tr.n_people:
         tr, cams, floor_info["level"] = _floor(cfg, tr, cams, "level")
-        cams.floor.update({"levelled": True, "floor_z": 0.0})
+        if floor_info["level"].get("source") != "none":
+            cams.floor.update({"levelled": True, "floor_z": 0.0})
     tr.meta["floor"] = floor_info
     tr.save(work.tracks)
     save_cameras(cams, work.cameras_level)

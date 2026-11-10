@@ -138,6 +138,19 @@ def standing_ankle_height(X: np.ndarray, fps: float, min_frames: int = 20) -> fl
     if not np.isfinite(pz).any():
         return np.nan
     stand = np.isfinite(pz) & (pz > np.nanpercentile(pz, 60)) & (np.nan_to_num(av, nan=np.inf) < 0.1)
+    # standing gate: the pelvis must also be above 0.8 x the tracked leg length (thigh + shin); a person who never
+    # stands (seated child, kneeling parent) otherwise defines the ankle height from sitting frames
+    with np.errstate(all="ignore"):
+        leg = np.nanmedian(
+            np.r_[
+                np.linalg.norm(X[:, J["hip_l"]] - X[:, J["knee_l"]], axis=-1)
+                + np.linalg.norm(X[:, J["knee_l"]] - X[:, J["ankle_l"]], axis=-1),
+                np.linalg.norm(X[:, J["hip_r"]] - X[:, J["knee_r"]], axis=-1)
+                + np.linalg.norm(X[:, J["knee_r"]] - X[:, J["ankle_r"]], axis=-1),
+            ]
+        )
+    if np.isfinite(leg):
+        stand &= pz > 0.8 * leg
     if stand.sum() < min_frames:
         return np.nan
     return float(np.nanmedian(np.nanmin(ank[stand][:, :, 2], 1)))

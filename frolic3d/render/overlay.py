@@ -136,13 +136,14 @@ def render_overlay(
     names = cam_names or scene.cams.names
     cams = [scene.cams[n] for n in names]
     shared = pyrender.OffscreenRenderer(8, 8)  # one GL context for every view; viewports are resized per view
-    views = [ViewRenderer(c, cfg.tile_width, supersample=cfg.supersample, renderer=shared) for c in cams]
+    tw = (cfg.grid_tile_width or cfg.tile_width) if grid else cfg.tile_width
+    views = [ViewRenderer(c, tw, supersample=cfg.supersample, renderer=shared) for c in cams]
     frames = [CameraFrames(scene, c) for c in cams]
     i0, i1 = render_window(scene, cfg)
     ts = output_times(i0, i1, scene.fps, cfg.fps)
-    label_size = max(12, int(cfg.tile_width / 40))
+    label_size = max(12, int(tw / 40))
     if grid:
-        ncol = int(np.ceil(np.sqrt(len(cams))))
+        ncol = cfg.grid_cols or int(np.ceil(np.sqrt(len(cams))))
         nrow = int(np.ceil(len(cams) / ncol))
         W, H = ncol * views[0].tw, nrow * views[0].th
     else:
